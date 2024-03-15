@@ -22,7 +22,7 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "public": "out",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -46,7 +46,7 @@
       "port": 9000
     },
     "hosting": {
-      "port": 5000
+      "port": 5001
     },
     "pubsub": {
       "port": 8085
@@ -58,7 +58,7 @@
       "port": 9299
     },
     "ui": {
-      "enabled": true
+      "enabled": false
     },
     "singleProjectMode": true
   },
