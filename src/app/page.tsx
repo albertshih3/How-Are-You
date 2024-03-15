@@ -1,5 +1,24 @@
 import Image from "next/image";
 
+// Import Firebase modules
+import { initializeApp } from "firebase/app";
+import { getAnalytics, isSupported } from "firebase/analytics";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDwxUjSB5LZchYL7TF_FpslMf_5ILgqP-U",
+  authDomain: "how-are-you-c7679.firebaseapp.com",
+  projectId: "how-are-you-c7679",
+  storageBucket: "how-are-you-c7679.appspot.com",
+  messagingSenderId: "420711210912",
+  appId: "1:420711210912:web:74d0447069c6bb3c828ec5",
+  measurementId: "G-4BJGH4P4R0"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
