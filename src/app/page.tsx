@@ -1,8 +1,10 @@
-// Firebase Imports
+// Imports
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { Button, buttonVariants } from "@/components/ui/button";
+import Link from 'next/link';
+import Navbar from './components/navigation/navbar';
+import MaxWidthWrapper from "@/components/maxWidthWrapper";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,13 +21,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
 
-import Navbar from './components/navigation/navbar';
-
 export default function Home() {
   return (
-    <main>
-      <h1>How Are You?</h1>
-      <p>A mental health app for students, by students.</p>
-    </main>
+    <MaxWidthWrapper>
+      <div className = 'py-20 mx-auto text-center flex flex-col items-center max-w-3xl'>
+        <h1 className = 'text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl'>How Are You <span className = 'text-blue-600'>Today</span>?</h1>
+        <p className = 'mt-6 text-lg max-w-prose text-muted-foreground'>A mental health application for students, by students.</p>
+        <div className = "flex flex-col sm:flex-row gap-4 mt-6">
+          <Link href = '/begin' className = {buttonVariants()}>Get Started &rarr;</Link>
+          <Button variant = 'ghost'>Learn More &rarr;</Button>
+        </div>
+      </div>
+    </MaxWidthWrapper>
   );
 }
