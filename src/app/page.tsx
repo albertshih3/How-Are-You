@@ -1,6 +1,7 @@
 // Imports
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from 'next/link';
 import Navbar from './components/navigation/navbar';
