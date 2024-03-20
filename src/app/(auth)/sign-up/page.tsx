@@ -1,5 +1,6 @@
 "use client"
 
+// Import Statements
 import Image from 'next/image';
 import Logo from '/public/logo.svg';
 import Link from 'next/link';
@@ -10,20 +11,12 @@ import { cn } from "@/lib/utils";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthCredentialsValidator, TAuthCredentialsValudator } from '@/lib/validators/account-credentials-validator';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAsGuW-IKBby4u6P7I09JeIiB2ucaAp3v8",
-  authDomain: "how-are-you-5e726.firebaseapp.com",
-  projectId: "how-are-you-5e726",
-  storageBucket: "how-are-you-5e726.appspot.com",
-  messagingSenderId: "998409201010",
-  appId: "1:998409201010:web:3bd10d45a4041c6f9469eb",
-  measurementId: "G-39BHF66YLF"
-};
+import firebaseConfig from '@/app/config/firebasecfg';
+import { Toaster, toast } from 'sonner'
+import { useRouter } from 'next/navigation';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -31,9 +24,11 @@ const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
 
 import { z } from 'zod';
 
+
 const Page = () => {
 
   const auth = getAuth();
+  const router = useRouter();
 
   const {
     register,
@@ -43,21 +38,29 @@ const Page = () => {
     resolver: zodResolver(AuthCredentialsValidator),
   });
 
-  const onSubmit = ({ email, password }: TAuthCredentialsValudator) => {
+  const onSubmit = ({ email, password, name }: TAuthCredentialsValudator) => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
+        updateProfile(user, {
+          displayName: name
+        })
         console.log(user);
+        toast.success('Your account has been created! Please check your email for a verification link!')
+        sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!');
+        router.push('/login')
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
+        toast.error('There has been an issue creating your account: ' + errorMessage)
         console.error(errorCode, errorMessage);
       });
   }
 
   return (
     <>
+      <Toaster position="bottom-center" richColors  />
       <div className='container relative flex pt-20 flex-col items-center justify-center lg:px-0'>
         <div className='mx-auto flex w-full flex-col justify-center space0y-6 sm:w-[350px]'>
           <div className='flex flex-col items-center space-y-2 text-center'>
@@ -70,6 +73,12 @@ const Page = () => {
           
           <div className='grid gap-6'>
             <form onSubmit={handleSubmit(onSubmit)}>
+            <div className='grid gap-2'>
+                <div className='grid gap-1 py-2'>
+                <Label htmlFor='name'>Name</Label>
+                <Input {...register("name")} className={cn({'focus-visible:ring-red-500': errors.name})} placeholder='Prefered Name' id='name' type='text' />
+                </div>
+              </div>
               <div className='grid gap-2'>
                 <div className='grid gap-1 py-2'>
                 <Label htmlFor='email'>Email</Label>
@@ -79,11 +88,12 @@ const Page = () => {
               <div className='grid gap-2'>
                 <div className='grid gap-1 py-2'>
                 <Label htmlFor='password'>Password</Label>
-                <Input {...register("password")} className={cn({'focus-visible:ring-red-500': errors.password})} placeholder='password' id='password' type='password' />
+                <Input {...register("password")} className={cn({'focus-visible:ring-red-500': errors.password})} placeholder='Password' id='password' type='password' />
                 </div>
                 <Button>Sign Up</Button>
               </div>
             </form>
+            <Button onClick={() => sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!')}>Test Toast</Button>
           </div>
 
         </div>

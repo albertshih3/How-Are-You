@@ -6,6 +6,7 @@ import Logo from '/public/logo.svg';
 import NavItems from './navItems';
 import { buttonVariants } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/dark-mode';
+  
 
 const Navbar = () => {
 
@@ -13,8 +14,8 @@ const Navbar = () => {
     const user = null;
 
     return (
-        <div className = "bg-white sticky z-50 top-0 inset-x-0 h-16">
-            <header className = 'relative bg-white'>
+        <div className="sticky z-50 top-0 inset-x-0 h-16">
+            <header>
                 <MaxWidthWrapper>
                     <div className='border-b border-gray-200'>
                         <div className = 'flex h-16 items-center'>
