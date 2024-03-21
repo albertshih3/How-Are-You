@@ -12,8 +12,6 @@ import firebaseConfig from "./config/firebasecfg";
 import { useEffect } from "react";
 import { toast, Toaster } from "sonner";
 
-// Your web app's Firebase configuration
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
