@@ -25,7 +25,7 @@ export default function RootLayout({
         'relative h-full font-sans antialiased', inter.className)}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
