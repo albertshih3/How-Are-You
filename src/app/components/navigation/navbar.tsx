@@ -59,6 +59,7 @@ const Navbar = () => {
                                 <div className='hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-3'>
                                     {user ? (
                                         <>
+                                            <Link href='/changelog' className = {buttonVariants({variant: 'ghost'})}>Changelog</Link>
                                             <Button onClick={() => 
                                                 signOut(getAuth()).then(() => {
                                                     toast.info('You have been logged out!', {
