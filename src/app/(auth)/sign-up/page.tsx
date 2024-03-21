@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthCredentialsValidator, TAuthCredentialsValudator } from '@/lib/validators/account-credentials-validator';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import firebaseConfig from '@/app/config/firebasecfg';
@@ -46,6 +46,9 @@ const Page = () => {
           displayName: name
         })
         console.log(user);
+        if (auth.currentUser) {
+          sendEmailVerification(auth.currentUser);
+        }
         toast.success('Your account has been created! Please check your email for a verification link!')
         sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!');
         router.push('/login')
@@ -64,7 +67,7 @@ const Page = () => {
       <div className='container relative flex pt-20 flex-col items-center justify-center lg:px-0'>
         <div className='mx-auto flex w-full flex-col justify-center space0y-6 sm:w-[350px]'>
           <div className='flex flex-col items-center space-y-2 text-center'>
-            <Image src={Logo} width={100} height={100} alt='logo' />
+            <Image src={Logo} width={50} height={50} alt='logo' />
             <h1 className='text-2xl font-bold'>
               Create an Account
             </h1>
