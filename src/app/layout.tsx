@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "./components/navigation/navbar";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +30,8 @@ export default function RootLayout({
             disableTransitionOnChange
           >
         <main className = 'relative flex flex-col min-h-screen'>
+          <Analytics />
+          <SpeedInsights />
           <Navbar />
           {children}
         </main>
