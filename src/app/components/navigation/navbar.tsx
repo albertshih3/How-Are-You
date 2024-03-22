@@ -23,6 +23,7 @@ const Navbar = () => {
     <Toaster position="bottom-center" richColors  />
 
     const [user, setUser] = useState<User | null>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
     const auth = getAuth();
 
     useEffect(() => {
@@ -46,13 +47,12 @@ const Navbar = () => {
                 <MaxWidthWrapper>
                     <div className='border-b border-gray-200'>
                         <div className = 'flex h-16 items-center'>
-                            { /* TODO: Mobile Navigation */ }
                             <div className = 'ml-4 flex lg:ml-0'>
                                 <Link href = '/'>
                                     <Image src = {Logo} alt = 'How Are You Today?' width = {30} height = {30} />
                                 </Link>
                             </div>
-                            <div className = 'hiden z-50 lg:ml-8 lg:block lg:self-stretch'>
+                            <div className = 'hidden lg:block lg:self-stretch lg:ml-8'>
                                 <NavItems />
                             </div>
                             <div className = 'ml-auto flex items-center'>
@@ -81,7 +81,23 @@ const Navbar = () => {
                                         </>
                                     )}
                                 </div>
-
+                                {/* Mobile Navigation */}
+                                <div className='lg:hidden ml-4'>
+                                    <button onClick={() => setMenuOpen(!menuOpen)}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-6 w-6">
+                                            {menuOpen ? (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            ) : (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                            )}
+                                        </svg>
+                                    </button>
+                                    {menuOpen && (
+                                        <div className='absolute top-16 left-0 w-full p-2 bg-white shadow-md'>
+                                            <NavItems />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

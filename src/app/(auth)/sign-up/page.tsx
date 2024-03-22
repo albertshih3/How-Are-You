@@ -96,7 +96,7 @@ const Page = () => {
                 <Button>Sign Up</Button>
               </div>
             </form>
-            <Button onClick={() => sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!')}>Test Toast</Button>
+            { /* <Button onClick={() => sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!')}>Test Toast</Button> */ }
           </div>
 
         </div>

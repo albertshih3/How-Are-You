@@ -91,7 +91,7 @@ const Login = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-8">
               <FormField
                 control={form.control}
                 name="email"
@@ -101,9 +101,6 @@ const Login = () => {
                     <FormControl>
                       <Input placeholder="example@example.com" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Please enter the email you used when signing up.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -115,16 +112,15 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="Password" {...field} />
+                      <Input type = 'password' placeholder="Password" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Please enter your password.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit">Sign In</Button>
+              <div className='flex flex-col justify center'>
+                <Button className = ' align-center' type="submit">Sign In</Button>
+              </div>
             </form>
           </Form>
 

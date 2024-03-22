@@ -34,6 +34,20 @@ const Changelog = () => {
                             </ul>
                             </AccordionContent>
                         </AccordionItem>
+                        <AccordionItem value="item-2">
+                            <AccordionTrigger className='font-bold text-xl'>Update 2: Navbar & Login</AccordionTrigger>
+                            <AccordionContent>
+                            Updates to the navigation bar and login page. This update includes a new mobile navigation button
+                            and also fixes the spacing issue on the login page. It also fixes an issue where the password field
+                            on the login page was not being recognized as a password field.
+                            <p className = 'font-bold'>Changes:</p>
+                            <ul>
+                                <li>- New hamburger menu on navigation bar</li>
+                                <li>- Fixed login page input spacing</li>
+                                <li>- Updated password field on login to be a password type and not a regular input.</li>
+                            </ul>
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </MaxWidthWrapper>
             </div>
