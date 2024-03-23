@@ -48,6 +48,18 @@ const Changelog = () => {
                             </ul>
                             </AccordionContent>
                         </AccordionItem>
+                        <AccordionItem value="item-3">
+                            <AccordionTrigger className='font-bold text-xl'>Update 3: Navbar Revamp!</AccordionTrigger>
+                            <AccordionContent>
+                            Navigation Bar is now responsive and uses new UI components. Navbar also complies with theming.
+                            Navigation bar items are still hardcoded at the moment and will be updated in the future to match
+                            the pages in the app.
+                            <p className = 'font-bold'>Changes:</p>
+                            <ul>
+                                <li>- New navigation bar with proper theming</li>
+                            </ul>
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </MaxWidthWrapper>
             </div>
