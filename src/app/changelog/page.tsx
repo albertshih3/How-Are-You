@@ -5,11 +5,13 @@ import {
     AccordionItem,
     AccordionTrigger,
   } from "@/components/ui/accordion"
+import { toast, Toaster } from 'sonner';
   
 
 const Changelog = () => {
     return (
         <>
+            <Toaster position="bottom-center" richColors  />
             <MaxWidthWrapper>
                 <div className = 'container relative flex flex-col pt-10 items-center justify-center'>
                     <h1 className = 'text-4xl font-bold sm:text-6xl'>Changelog</h1>
@@ -57,6 +59,21 @@ const Changelog = () => {
                             <p className = 'font-bold'>Changes:</p>
                             <ul>
                                 <li>- New navigation bar with proper theming</li>
+                            </ul>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-4">
+                            <AccordionTrigger className='font-bold text-xl'>Update 4: Mobile Navigation & Toasts!</AccordionTrigger>
+                            <AccordionContent>
+                            Introducing the mobile navbar! Now the navbar is fully functional on mobile devices. Also, updated
+                            toasts in the app to now display directly from the navbar. This will make it so we do not need to
+                            store the toast message in session storage anymore. Toasts should also persist across page changes now.
+                            <p className = 'font-bold'>Changes:</p>
+                            <ul>
+                                <li>- New mobile navigation bar using drawers!</li>
+                                <li>- Updated toasts to display from navbar</li>
+                                <li className='font-bold'>- ISSUE: Remove sessionStorage toast storage</li>
+                                <li className='font-bold'>- ISSUE: Extra toast code due to sessionStorage</li>
                             </ul>
                             </AccordionContent>
                         </AccordionItem>

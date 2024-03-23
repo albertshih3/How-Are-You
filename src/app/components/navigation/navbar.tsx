@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Logo from '/public/logo.svg';
 import React, { useState, useEffect } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ModeToggle } from '@/components/ui/dark-mode';
+import { ModeToggle, ModeToggleMobile } from '@/components/ui/dark-mode';
 import { getAuth, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
@@ -15,6 +15,18 @@ import firebaseConfig from '@/app/config/firebasecfg';
 import { toast, Toaster } from 'sonner';
 import { Icons } from '@/components/ui/icons';
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from '@/hooks/use-media-query';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+  } from "@/components/ui/drawer"
+import HamburgerMenu from '/public/hamburger-menu.svg';
 
 const app = initializeApp(firebaseConfig);
 const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
@@ -59,8 +71,6 @@ const components: { title: string; href: string; description: string }[] = [
 
 const Navbar = () => {
 
-    <Toaster position="bottom-center" richColors  />
-
     const [user, setUser] = useState<User | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const auth = getAuth();
@@ -82,8 +92,10 @@ const Navbar = () => {
 
     return (
         <header>
+            <Toaster position="bottom-center" richColors  />
             <MaxWidthWrapper>
-                <div className = 'flex h-16 items-center border-b border-gray-3000'>
+                {/* !Desktop Navigation */}
+                <div className = 'hidden md:flex h-16 items-center border-b border-gray-3000'>
                     <div className="sticky z-50 top-0 inset-x-0 h-16">
                         <NavigationMenu>
                             <div className = 'ml-4 flex lg:ml-0 pt-3 pr-3'>
@@ -91,7 +103,7 @@ const Navbar = () => {
                                     <Image src = {Logo} alt = 'How Are You Today?' width = {30} height = {30} />
                                 </Link>
                             </div>
-                            <NavigationMenuList className = 'pt-3'>
+                            <NavigationMenuList className = 'hidden md:flex pt-3'>
                                 <NavigationMenuItem>
                                 <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
                                 <NavigationMenuContent>
@@ -152,7 +164,7 @@ const Navbar = () => {
                         </NavigationMenu>
                     </div>
                     <div className = 'ml-auto flex items-center pt-3 pb-3'>
-                                <div className='hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-3'>
+                                <div className='hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-3'>
                                     {user ? (
                                         <>
                                             <Link href='/changelog' className = {buttonVariants({variant: 'ghost'})}>Changelog</Link>
@@ -179,7 +191,57 @@ const Navbar = () => {
                                 </div>
                             </div>
                 </div>
+
+                {/* !Mobile Navigation */}
+                <div className = 'md:hidden'>
+                    <div className="sticky z-50 top-0 inset-x-0 h-16">
+
+                        <Drawer>
+                            <DrawerTrigger className='pt-3'>
+                                <Image src = {HamburgerMenu} alt = 'How Are You Today?' width = {30} height = {30} />
+                            </DrawerTrigger>
+                            <DrawerContent>
+                                <DrawerHeader>
+                                <DrawerTitle>Main Menu</DrawerTitle>
+                                </DrawerHeader>
+                                <div className='flex flex-col items-center space-y-2'>
+                                    <Link className={buttonVariants({variant: 'ghost'})} href='/'>Home</Link>
+                                    <div className='border-t border-b pt-3 pb-3 flex flex-col items-center space-y-2'>
+                                        {user ? (
+                                            <>
+                                                <Link href='/changelog' className = {buttonVariants({variant: 'ghost'})}>Changelog</Link>
+                                                <Button variant='ghost' onClick={() => 
+                                                    signOut(getAuth()).then(() => {
+                                                        toast.info('You have been logged out!', {
+                                                            description: 'See you again soon!',
+                                                        })
+                                                    }).catch((error) => {
+                                                        // An error happened.
+                                                    })
+                                                }>Logout</Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link href='/login' className={buttonVariants({variant: 'ghost'})}>Sign In</Link>
+                                                <Link href='/sign-up' className={`${buttonVariants({variant: 'ghost'})}`}>Create Account</Link>
+                                            </>
+                                        )}
+                                    </div>
+                                    <ModeToggleMobile />
+                                </div>
+                                <DrawerFooter>
+                                <DrawerClose>
+                                    <Button variant="outline">Close Menu</Button>
+                                </DrawerClose>
+                                </DrawerFooter>
+                            </DrawerContent>
+                        </Drawer>
+
+                        
+                    </div>
+                </div>
             </MaxWidthWrapper>
+            
         </header>
     );
 }
