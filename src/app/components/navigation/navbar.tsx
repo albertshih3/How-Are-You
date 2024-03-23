@@ -26,7 +26,7 @@ import {
     DrawerTitle,
     DrawerTrigger,
   } from "@/components/ui/drawer"
-import HamburgerMenu from '/public/hamburger-menu.svg';
+import { Menu } from 'lucide-react';
 
 const app = initializeApp(firebaseConfig);
 const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
@@ -198,7 +198,7 @@ const Navbar = () => {
 
                         <Drawer>
                             <DrawerTrigger className='pt-3'>
-                                <Image src = {HamburgerMenu} alt = 'How Are You Today?' width = {30} height = {30} />
+                                <Menu />
                             </DrawerTrigger>
                             <DrawerContent>
                                 <DrawerHeader>

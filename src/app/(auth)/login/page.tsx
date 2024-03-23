@@ -55,7 +55,6 @@ const Login = () => {
         const user = userCredential.user;
         console.log(user);
         toast.success('Welcome back! You have successfully signed in!')
-        sessionStorage.setItem('toastMessage', 'Welcome back! You have successfully signed in!');
         router.push('/')
       })
       .catch((error) => {
@@ -66,16 +65,6 @@ const Login = () => {
       });
   }
 
-  useEffect(() => {
-    const message = sessionStorage.getItem('toastMessage');
-    let isToast = false;
-  
-    if (message) {
-      toast.success(message)
-      sessionStorage.removeItem('toastMessage');
-      isToast = true;
-    }
-  }, []);
 
   return (
     <>

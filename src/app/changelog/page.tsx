@@ -69,11 +69,18 @@ const Changelog = () => {
                             toasts in the app to now display directly from the navbar. This will make it so we do not need to
                             store the toast message in session storage anymore. Toasts should also persist across page changes now.
                             <p className = 'font-bold'>Changes:</p>
-                            <ul>
+                            <ul className='pb-5'>
                                 <li>- New mobile navigation bar using drawers!</li>
                                 <li>- Updated toasts to display from navbar</li>
                                 <li className='font-bold'>- ISSUE: Remove sessionStorage toast storage</li>
                                 <li className='font-bold'>- ISSUE: Extra toast code due to sessionStorage</li>
+                                <li className='font-bold'>- ISSUE: Navbar not changing color in dark mode</li>
+                            </ul>
+                            <p className = 'border-t pt-3 font-bold'>Hotfix 1</p>
+                            <ul>
+                                <li className='font-bold'>- FIXED: Removed sessionStorage toast storage</li>
+                                <li className='font-bold'>- FIXED: Removed extra toast code due to sessionStorage</li>
+                                <li className='font-bold'>- FIXED: Navbar is now dynamic :D</li>
                             </ul>
                             </AccordionContent>
                         </AccordionItem>

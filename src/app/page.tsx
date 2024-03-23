@@ -19,17 +19,6 @@ const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
 
 export default function Home() {
 
-  useEffect(() => {
-    const message = sessionStorage.getItem('toastMessage');
-    let isToast = false;
-  
-    if (message) {
-      toast.success(message)
-      sessionStorage.removeItem('toastMessage');
-      isToast = true;
-    }
-  }, []);
-
   return (
     <MaxWidthWrapper>
       <Toaster position="bottom-center" richColors  />
