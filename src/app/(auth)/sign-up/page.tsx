@@ -50,7 +50,6 @@ const Page = () => {
           sendEmailVerification(auth.currentUser);
         }
         toast.success('Your account has been created! Please check your email for a verification link!')
-        sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!');
         router.push('/login')
       })
       .catch((error) => {
@@ -96,7 +95,6 @@ const Page = () => {
                 <Button>Sign Up</Button>
               </div>
             </form>
-            <Button onClick={() => sessionStorage.setItem('toastMessage', 'Your account has been created! Please check your email for a verification link!')}>Test Toast</Button>
           </div>
 
         </div>

@@ -19,17 +19,6 @@ const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
 
 export default function Home() {
 
-  useEffect(() => {
-    const message = sessionStorage.getItem('toastMessage');
-    let isToast = false;
-  
-    if (message) {
-      toast.success(message)
-      sessionStorage.removeItem('toastMessage');
-      isToast = true;
-    }
-  }, []);
-
   return (
     <MaxWidthWrapper>
       <Toaster position="bottom-center" richColors  />
@@ -37,7 +26,7 @@ export default function Home() {
         <h1 className = 'text-4xl font-bold tracking-tight sm:text-6xl'>How Are You <span className = 'text-blue-600'>Today</span>?</h1>
         <p className = 'mt-6 text-lg max-w-prose text-muted-foreground'>A mental health application for students, by students.</p>
         <div className = "flex flex-col sm:flex-row gap-4 mt-6">
-          <Link href = '/begin' className = {buttonVariants()}>Get Started &rarr;</Link>
+          <Link href = '/sign-up' className = {buttonVariants()}>Get Started &rarr;</Link>
           <Button variant = 'ghost'>Learn More &rarr;</Button>
         </div>
       </div>
