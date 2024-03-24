@@ -84,6 +84,19 @@ const Changelog = () => {
                             </ul>
                             </AccordionContent>
                         </AccordionItem>
+                        <AccordionItem value="item-5">
+                            <AccordionTrigger className='font-bold text-xl'>Update 5: Navigation Bar Iteration 1 Final!</AccordionTrigger>
+                            <AccordionContent>
+                            Finished up navbar by removing placeholder text and adding future page links.
+                            Mobile navigation is also looking better!
+                            <p className = 'font-bold'>Changes:</p>
+                            <ul className='pb-5'>
+                                <li>- Removed placeholder text, added additional navigation items</li>
+                                <li>- Updated mobile navigation to match desktop navigation</li>
+                                <li className='font-bold'>- ISSUE: Mobile Navigation still does not close upon menu click</li>
+                            </ul>
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </MaxWidthWrapper>
             </div>

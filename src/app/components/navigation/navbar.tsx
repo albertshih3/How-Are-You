@@ -33,47 +33,36 @@ const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
 
 const components: { title: string; href: string; description: string }[] = [
     {
-      title: "Alert Dialog",
-      href: "/docs/primitives/alert-dialog",
+      title: "Mood Tracker",
+      href: "/mood-tracker",
       description:
-        "A modal dialog that interrupts the user with important content and expects a response.",
+        "Track your mood and emotions with our easy to use mood tracker.",
     },
     {
-      title: "Hover Card",
-      href: "/docs/primitives/hover-card",
-      description:
-        "For sighted users to preview content available behind a link.",
+        title: "Journal",
+        href: "/journal",
+        description:
+          "Write down your thoughts and feelings in your personal journal.",
     },
     {
-      title: "Progress",
-      href: "/docs/primitives/progress",
-      description:
-        "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+        title: "View Community Posts",
+        href: "/community",
+        description:
+          "View and engage with posts from other users in the community.",
     },
     {
-      title: "Scroll-area",
-      href: "/docs/primitives/scroll-area",
-      description: "Visually or semantically separates content.",
-    },
-    {
-      title: "Tabs",
-      href: "/docs/primitives/tabs",
-      description:
-        "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-    },
-    {
-      title: "Tooltip",
-      href: "/docs/primitives/tooltip",
-      description:
-        "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-    },
+        title: "Create a Post",
+        href: "/community/create",
+        description:
+          "Create a post to share your thoughts and feelings with the community.",
+    }
   ]
 
 const Navbar = () => {
 
     const [user, setUser] = useState<User | null>(null);
-    const [menuOpen, setMenuOpen] = useState(false);
     const auth = getAuth();
+
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -100,7 +89,7 @@ const Navbar = () => {
                         <NavigationMenu>
                             <div className = 'ml-4 flex lg:ml-0 pt-3 pr-3'>
                                 <Link href = '/'>
-                                    <Image src = {Logo} alt = 'How Are You Today?' width = {30} height = {30} />
+                                    <Image className='p-1' src = {Logo} alt = 'How Are You Today?' width = {30} height = {30} />
                                 </Link>
                             </div>
                             <NavigationMenuList className = 'hidden md:flex pt-3'>
@@ -125,38 +114,45 @@ const Navbar = () => {
                                         </a>
                                         </NavigationMenuLink>
                                     </li>
-                                    <ListItem href="/docs" title="Introduction">
-                                        Re-usable components built using Radix UI and Tailwind CSS.
+                                    <ListItem href="/sign-up" title="Create an Account">
+                                        Create an account to access all of the apps features!
                                     </ListItem>
-                                    <ListItem href="/docs/installation" title="Installation">
-                                        How to install dependencies and structure your app.
+                                    <ListItem href="/features" title="Features">
+                                        Get an in depth look at all of the features we offer.
                                     </ListItem>
-                                    <ListItem href="/docs/primitives/typography" title="Typography">
-                                        Styles for headings, paragraphs, lists...etc
+                                    <ListItem href="/privacy" title="Privacy Policy">
+                                        Learn more about our privacy policy, and how we manage data.
                                     </ListItem>
                                     </ul>
                                 </NavigationMenuContent>
                                 </NavigationMenuItem>
+
+                                {user ? (
+
+                                    <NavigationMenuItem>
+                                    <NavigationMenuTrigger>Quick Access</NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                                        {components.map((component) => (
+                                            <ListItem
+                                            key={component.title}
+                                            title={component.title}
+                                            href={component.href}
+                                            >
+                                            {component.description}
+                                            </ListItem>
+                                        ))}
+                                        </ul>
+                                    </NavigationMenuContent>
+                                    </NavigationMenuItem>
+
+                                ) : null}
+
+
                                 <NavigationMenuItem>
-                                <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                                    {components.map((component) => (
-                                        <ListItem
-                                        key={component.title}
-                                        title={component.title}
-                                        href={component.href}
-                                        >
-                                        {component.description}
-                                        </ListItem>
-                                    ))}
-                                    </ul>
-                                </NavigationMenuContent>
-                                </NavigationMenuItem>
-                                <NavigationMenuItem>
-                                <Link href="/docs" legacyBehavior passHref>
+                                <Link href="/about" legacyBehavior passHref>
                                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                    Documentation
+                                    About Us
                                     </NavigationMenuLink>
                                 </Link>
                                 </NavigationMenuItem>
@@ -168,7 +164,8 @@ const Navbar = () => {
                                     {user ? (
                                         <>
                                             <Link href='/changelog' className = {buttonVariants({variant: 'ghost'})}>Changelog</Link>
-                                            <Button onClick={() => 
+                                            <Link href='/account' className = {buttonVariants({variant: 'outline'})}>My Account</Link>
+                                            <Button variant='destructive' onClick={() => 
                                                 signOut(getAuth()).then(() => {
                                                     toast.info('You have been logged out!', {
                                                         description: 'See you again soon!',
@@ -206,10 +203,22 @@ const Navbar = () => {
                                 </DrawerHeader>
                                 <div className='flex flex-col items-center space-y-2'>
                                     <Link className={buttonVariants({variant: 'ghost'})} href='/'>Home</Link>
+
+                                    <div className='border-t pt-3 pb-3 flex flex-col items-center space-y-2'>
+                                        <Link href='/about' className={buttonVariants({variant: 'ghost'})}>About Us</Link>
+
+                                        {user ? (
+                                            <Link href='/qamobile' className={buttonVariants({variant: 'ghost'})}>Quick Access</Link>
+                                        ) : null
+                                        }
+
+                                    </div>
+
                                     <div className='border-t border-b pt-3 pb-3 flex flex-col items-center space-y-2'>
                                         {user ? (
                                             <>
                                                 <Link href='/changelog' className = {buttonVariants({variant: 'ghost'})}>Changelog</Link>
+                                                <Link href='/account' className = {buttonVariants({variant: 'ghost'})}>My Account</Link>
                                                 <Button variant='ghost' onClick={() => 
                                                     signOut(getAuth()).then(() => {
                                                         toast.info('You have been logged out!', {
