@@ -83,11 +83,11 @@ const Unauthorized = () => {
             >
               Log in
             </Link>
-            {/*  eslint-disable-next-line react/no-unescaped-entities */}
             <Link
               href="/sign-up"
               className={`${buttonVariants({ variant: "link" })} flex flex-col items-center`}
             >
+              {/*  eslint-disable-next-line react/no-unescaped-entities */}
               Don't have an account? Create one!
             </Link>
           </div>
