@@ -7,6 +7,8 @@ import {
   ChevronsUpDown,
   Check,
   CalendarIcon,
+  User,
+  HeartHandshake,
 } from "lucide-react";
 import {
   getFirestore,
@@ -76,12 +78,19 @@ const formSchema = z.object({
 
 const auth = getAuth();
 const db = getFirestore();
-console.log(db);
 
 const usersRef = collection(db, "users");
 
 const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
   const [userData, setUserData] = useState<DocumentData | null>(null);
+  const [showDiv1, setShowDiv1] = useState(true);
+  const [showDiv2, setShowDiv2] = useState(false);
+
+  const handleButtonClick = () => {
+    setShowDiv1(!showDiv1);
+    setShowDiv2(!showDiv2);
+  };
+
   let verifyAlert = null;
 
   useEffect(() => {
@@ -102,7 +111,7 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nickname: "",
-      pronouns: "",
+      pronouns: userData ? userData.pronouns : "",
       dob: userData ? userData.birthday : new Date(),
     },
   });
@@ -123,6 +132,9 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
       success: "Your information has been updated!",
       error: "There was an issue updating your information.",
     });
+
+    setShowDiv1(!showDiv1);
+    setShowDiv2(!showDiv2);
   }
 
   if (!userDetails.emailVerified) {
@@ -164,12 +176,83 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
     );
   }
 
-  console.log(userData);
+  let displayUserName = (
+    <Alert>
+      <User className="h-5 w-5" />
+      <div className="flex">
+        <div className="ml-2 mr-1 mt-1">
+          <AlertTitle>Current Username</AlertTitle>
+          <AlertDescription>
+            Your current username is <strong>{userData?.nickname}</strong>.
+          </AlertDescription>
+        </div>
+      </div>
+    </Alert>
+  );
+
+  let displayPronouns = (
+    <Alert>
+      <HeartHandshake className="h-5 w-5" />
+      <div className="flex">
+        <div className="ml-2 mr-1 mt-1">
+          <AlertTitle>Current Pronouns</AlertTitle>
+          <AlertDescription>
+            Your current pronouns are{" "}
+            <strong>
+              {
+                PRONOUNS.find((pronoun) => pronoun.value === userData?.pronouns)
+                  ?.label
+              }
+            </strong>
+            .
+          </AlertDescription>
+        </div>
+      </div>
+    </Alert>
+  );
+
+  let displayDOB = (
+    <Alert>
+      <CalendarIcon className="h-5 w-5" />
+      <div className="flex">
+        <div className="ml-2 mr-1 mt-1">
+          <AlertTitle>Date of Birth</AlertTitle>
+          <AlertDescription>
+            Your date of birth is <strong>TEST</strong>.
+          </AlertDescription>
+        </div>
+      </div>
+    </Alert>
+  );
 
   return (
     <div>
       {verifyAlert}
-      <div className="mt-5">
+      <div className="border-b border-dashed border-gray-200 pb-4">
+        <h2 className="text-2xl font-semibold">Account Settings</h2>
+        <p className="text-muted-foreground">
+          Update your account information here.
+        </p>
+      </div>
+      <div
+        id="div1"
+        className={`${showDiv1 ? "" : "hidden"} mt-5 flex flex-col items-center space-y-3`}
+      >
+        {displayUserName}
+        {displayPronouns}
+        {displayDOB}
+        <div className="content-center">
+          <Button
+            onClick={handleButtonClick}
+            variant="expandIcon"
+            Icon={ArrowRightIcon}
+            iconPlacement="right"
+          >
+            Update User Information
+          </Button>
+        </div>
+      </div>
+      <div id="div2" className={`${showDiv2 ? "" : "hidden"} mt-5`}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
