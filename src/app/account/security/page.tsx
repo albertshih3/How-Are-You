@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import firebaseConfig from "../config/firebasecfg";
-import firebase, { initializeApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
 import {
   getAuth,
   onAuthStateChanged,
@@ -13,6 +12,7 @@ import {
   reauthenticateWithCredential,
   User,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { toast, Toaster } from "sonner";
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
@@ -23,9 +23,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import SidebarNav from "../components/navigation/sidebar";
-import Unauthorized from "../unauthorized/page";
-import AccountForm, { UserDetails } from "./accountForm";
+import firebaseConfig from "@/app/config/firebasecfg";
+import SidebarNav from "@/app/components/navigation/sidebar";
+import Unauthorized from "@/app/unauthorized/page";
+import SecurityForm, { UserDetails } from "./securityForm";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -34,7 +35,7 @@ const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
 // Check if user is logged in
 const auth = getAuth();
 
-const AccountPage = () => {
+const AccountSecurity = () => {
   const [user, setUser] = useState<User | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   <Toaster position="bottom-center" richColors />;
@@ -99,7 +100,7 @@ const AccountPage = () => {
               <ResizableHandle withHandle />
               <ResizablePanel>
                 <div className="rounded-r-md border-b border-r border-t p-5">
-                  {userDetails && <AccountForm userDetails={userDetails} />}
+                  {userDetails && <SecurityForm userDetails={userDetails} />}
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -110,4 +111,4 @@ const AccountPage = () => {
   }
 };
 
-export default AccountPage;
+export default AccountSecurity;

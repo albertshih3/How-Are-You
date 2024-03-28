@@ -1,26 +1,45 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-const SidebarNav = () => {
+import { buttonVariants } from "@/components/ui/button";
+
+export default function SidebarNav() {
+  const pathname = usePathname();
+
   return (
-    <div className="flex w-full flex-col items-center space-y-3">
-      <Link href="/account" className={buttonVariants({ variant: "outline" })}>
-        Profile Settings
+    <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
+      <Link
+        href="/account"
+        className={`
+          ${pathname === "/account/" ? buttonVariants({ variant: "ghost" }) : buttonVariants({ variant: "linkHover2" })},
+          ${pathname === "/account/" ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline"},
+          "justify-start",
+          `}
+      >
+        Account
       </Link>
       <Link
-        href="/account/personalinformation"
-        className={buttonVariants({ variant: "ghost" })}
+        href="/account/profile"
+        className={`
+          ${pathname === "/account/profile/" ? buttonVariants({ variant: "ghost" }) : buttonVariants({ variant: "linkHover2" })},
+          ${pathname === "/account/profile/" ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline"},
+          "justify-start",
+          `}
       >
-        Personal Settings
+        Profile
       </Link>
       <Link
-        href="/account/acctsecuritystg"
-        className={buttonVariants({ variant: "ghost" })}
+        href="/account/security"
+        className={`
+          ${pathname === "/account/security/" ? buttonVariants({ variant: "ghost" }) : buttonVariants({ variant: "linkHover2" })},
+          ${pathname === "/account/security/" ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline"},
+          "justify-start",
+          `}
       >
-        Security Settings
+        Security
       </Link>
-    </div>
+    </nav>
   );
-};
-
-export default SidebarNav;
+}
