@@ -14,6 +14,7 @@ import {
   getDoc,
   setDoc,
   collection,
+  DocumentData,
 } from "firebase/firestore";
 import { getAuth, sendEmailVerification } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -139,9 +140,17 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
           <div className="ml-1 mr-1 mt-1 content-center">
             <Button
               onClick={() => {
-                sendEmailVerification(auth.currentUser).then(() => {
-                  toast.success("Verification email sent!");
-                });
+                const user = auth.currentUser;
+                if (user) {
+                  sendEmailVerification(user).then(() => {
+                    toast.success("Verification email sent!");
+                  });
+                } else {
+                  // Handle the case when user is null (e.g., show an error message)
+                  console.error(
+                    "User is null. Unable to send verification email.",
+                  );
+                }
               }}
               variant="expandIcon"
               Icon={ArrowRightIcon}
