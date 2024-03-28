@@ -75,7 +75,7 @@ const Login = () => {
             <Image src={Logo} width={50} height={50} alt="logo" />
             <h1 className="text-2xl font-bold">Welcome Back!</h1>
             <Link
-              className={buttonVariants({ variant: "link" })}
+              className={buttonVariants({ variant: "linkHover2" })}
               href="/sign-up"
             >
               Do not have an account? Create one!
@@ -118,7 +118,11 @@ const Login = () => {
                 )}
               />
               <div className="justify center flex flex-col">
-                <Button className=" align-center" type="submit">
+                <Button
+                  variant="ringHover"
+                  className=" align-center"
+                  type="submit"
+                >
                   Sign In
                 </Button>
               </div>
