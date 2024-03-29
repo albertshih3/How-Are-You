@@ -137,7 +137,13 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
 
   let verifyAlert = null;
 
-  const form = useForm<z.infer<typeof formSchema>>({});
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+    },
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const setData = async () => {
@@ -315,7 +321,7 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="username"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
