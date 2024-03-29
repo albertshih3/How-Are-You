@@ -2,22 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  onAuthStateChanged,
-  updateProfile,
-  sendEmailVerification,
-  verifyBeforeUpdateEmail,
-  deleteUser,
-  reauthenticateWithCredential,
-  User,
-} from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -80,10 +68,11 @@ const AccountSecurity = () => {
             <div>
               <div className="mx-auto ml-5 flex flex-col sm:mt-8">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
-                  Account Settings
+                  Security Settings
                 </h1>
                 <p className="mb-8 mt-1 pr-20 text-muted-foreground sm:text-lg">
-                  Change your email address, password, or delete your account.
+                  These settings help you keep your account secure. Change your
+                  password or delete your account.
                 </p>
               </div>
             </div>
