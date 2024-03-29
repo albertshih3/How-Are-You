@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
+import firebaseConfig from "@/app/config/firebasecfg";
+import firebase, { initializeApp } from "firebase/app";
 import {
   getAuth,
   onAuthStateChanged,
@@ -12,7 +13,6 @@ import {
   reauthenticateWithCredential,
   User,
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { toast, Toaster } from "sonner";
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
@@ -23,7 +23,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import firebaseConfig from "@/app/config/firebasecfg";
 import SidebarNav from "@/app/components/navigation/sidebar";
 import Unauthorized from "@/app/unauthorized/page";
 import ProfileForm, { UserDetails } from "./profileForm";
@@ -35,7 +34,7 @@ const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
 // Check if user is logged in
 const auth = getAuth();
 
-const PersonalProfile = () => {
+const AccountPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   <Toaster position="bottom-center" richColors />;
@@ -80,10 +79,11 @@ const PersonalProfile = () => {
             <div>
               <div className="mx-auto ml-5 flex flex-col sm:mt-8">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
-                  Account Settings
+                  Settings
                 </h1>
                 <p className="mb-8 mt-1 pr-20 text-muted-foreground sm:text-lg">
-                  Change your email address, password, or delete your account.
+                  Change your email address, password, and other account
+                  settings.
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ const PersonalProfile = () => {
                 </div>
               </ResizablePanel>
               <ResizableHandle withHandle />
-              <ResizablePanel>
+              <ResizablePanel minSize={35}>
                 <div className="rounded-r-md border-b border-r border-t p-5">
                   {userDetails && <ProfileForm userDetails={userDetails} />}
                 </div>
@@ -111,4 +111,4 @@ const PersonalProfile = () => {
   }
 };
 
-export default PersonalProfile;
+export default AccountPage;
