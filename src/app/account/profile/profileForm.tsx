@@ -228,7 +228,7 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
   return (
     <div>
       {verifyAlert}
-      <div className="border-b border-dashed border-gray-200 pb-4">
+      <div className="mt-5 border-b border-dashed border-gray-200 pb-4">
         <h2 className="text-2xl font-semibold">Profile Settings</h2>
         <p className="text-muted-foreground">
           Update your profile here. Profile information is visible to other
