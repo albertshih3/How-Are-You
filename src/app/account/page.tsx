@@ -79,10 +79,11 @@ const AccountPage = () => {
             <div>
               <div className="mx-auto ml-5 flex flex-col sm:mt-8">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
-                  Account Settings
+                  Settings
                 </h1>
                 <p className="mb-8 mt-1 pr-20 text-muted-foreground sm:text-lg">
-                  Change your email address, password, or delete your account.
+                  Change your email address, password, and other account
+                  settings.
                 </p>
               </div>
             </div>
