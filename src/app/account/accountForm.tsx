@@ -142,11 +142,7 @@ const AccountForm = ({ userDetails }: { userDetails: UserDetails }) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     const setData = async () => {
       if (userDetails.uid) {
-        await setDoc(doc(db, "users", userDetails.uid), {
-          nickname: values.nickname,
-          pronouns: values.pronouns,
-          birthday: values.dob,
-        });
+        console.log(values);
       }
     };
 
