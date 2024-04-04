@@ -7,7 +7,7 @@ const AboutPage = () => {
     <>
       <MaxWidthWrapper className="mx-auto flex flex-col py-10">
         <h1 className="text-4xl font-bold lg:text-6xl">About</h1>
-        <p className="mt-1 max-w-prose text-lg text-muted-foreground">
+        <p className="mt-1 max-w-prose lg:text-lg text-muted-foreground">
           How are you is a mental health application created by students for
           students. Learn more about how we got started and our mission.
         </p>
