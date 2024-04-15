@@ -158,7 +158,7 @@ const AboutPage = () => {
       </MaxWidthWrapper>
 
       {/* Commitment to Privacy */}
-      <MaxWidthWrapper>
+      <MaxWidthWrapper className="mb-10">
         <Separator decorative={true} className="mt-5" />
         <div className="m-2 sm:m-0 pb-10">
           <h1 className="mt-10 text-2xl mb-2 font-semibold lg:text-4xl">

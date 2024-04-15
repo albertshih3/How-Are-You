@@ -1,5 +1,5 @@
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 
 const Footer = () => {
