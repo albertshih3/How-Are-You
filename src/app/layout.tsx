@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navigation/navbar";
+import Footer from "./components/footer/footer";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
@@ -39,6 +40,7 @@ export default function RootLayout({
               <SpeedInsights />
               <Navbar />
               {children}
+              <Footer />
             </main>
           </Providers>
         </ThemeProvider>
