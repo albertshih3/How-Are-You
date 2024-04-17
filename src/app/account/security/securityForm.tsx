@@ -414,21 +414,6 @@ const SecurityForm = ({ userDetails }: { userDetails: UserDetails }) => {
       <div id="div1" className={`${showDiv1 ? "" : "hidden"} mt-5 space-y-3`}>
         {displayPassword}
         {displayDelete}
-        <div className="flex justify-center space-x-3">
-          <Button
-            variant="expandIcon"
-            Icon={ArrowRightIcon}
-            iconPlacement="right"
-          >
-            <Link href="/account/security">Change Password</Link>
-          </Button>
-          <Link
-            href="/account/security"
-            className={buttonVariants({ variant: "destructive" })}
-          >
-            Delete Account
-          </Link>
-        </div>
       </div>
 
       {/* Form for updating account information */}
