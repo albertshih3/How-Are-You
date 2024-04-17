@@ -2,22 +2,11 @@
 
 import { useEffect, useState } from "react";
 import firebaseConfig from "@/app/config/firebasecfg";
-import firebase, { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  onAuthStateChanged,
-  updateProfile,
-  sendEmailVerification,
-  verifyBeforeUpdateEmail,
-  deleteUser,
-  reauthenticateWithCredential,
-  User,
-} from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
