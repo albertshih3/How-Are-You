@@ -25,15 +25,15 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 import firebaseConfig from "@/app/config/firebasecfg";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
 
-import { z } from "zod";
-
 const Page = () => {
   const auth = getAuth();
+  const db = getFirestore();
   const router = useRouter();
 
   const {
@@ -55,6 +55,9 @@ const Page = () => {
         if (auth.currentUser) {
           sendEmailVerification(auth.currentUser);
         }
+        setDoc(doc(db, "users", user.uid), {
+          name: user.displayName,
+        });
         toast.success(
           "Your account has been created! Please check your email for a verification link!",
         );
