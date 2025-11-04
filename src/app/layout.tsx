@@ -8,15 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "./providers";
-import firebaseConfig from "./config/firebasecfg";
-import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
 
 const inter = Inter({ subsets: ["latin"] });
-
-// Firebase Config
-const app = initializeApp(firebaseConfig);
-const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
 
 export const metadata: Metadata = {
   title: "How Are You?",

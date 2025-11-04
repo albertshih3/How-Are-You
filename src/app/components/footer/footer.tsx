@@ -4,12 +4,10 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <MaxWidthWrapper>
-      <footer style={{ position: "absolute", bottom: 0, width: "75%" }}>
-        <div className="border-t pt-2 flex space-x-5 items-center justify-center">
-          <div>
-            <p>© 2024 Albert Shih</p>
-          </div>
+    <footer className="mt-auto border-t bg-background">
+      <MaxWidthWrapper className="flex flex-col items-center justify-between gap-4 py-6 text-center sm:flex-row sm:text-left">
+        <p className="text-sm text-muted-foreground">© 2024 Albert Shih</p>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:justify-end">
           <Link
             className={buttonVariants({ variant: "linkHover2" })}
             href="/about"
@@ -29,8 +27,8 @@ const Footer = () => {
             Terms of Service
           </Link>
         </div>
-      </footer>
-    </MaxWidthWrapper>
+      </MaxWidthWrapper>
+    </footer>
   );
 };
 

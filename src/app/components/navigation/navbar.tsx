@@ -15,31 +15,28 @@ import {
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
 import Image from "next/image";
 import Logo from "/public/logo.svg";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ModeToggle, ModeToggleMobile } from "@/components/ui/dark-mode";
-import { getAuth, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { toast, Toaster } from "sonner";
 import { Icons } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
-import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import firebaseConfig from "@/app/config/firebasecfg";
-
-const app = initializeApp(firebaseConfig);
-const analytics = isSupported().then((yes) => (yes ? getAnalytics(app) : null));
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -69,27 +66,8 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 const Navbar = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const auth = getAuth();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in
-        setUser(user);
-      } else {
-        // User is signed out
-        setUser(null);
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [auth]);
-
   return (
     <header>
-      <Toaster position="bottom-center" richColors />
       <MaxWidthWrapper>
         {/* !Desktop Navigation */}
         <div className="border-gray-3000 hidden h-16 items-center border-b md:flex">
@@ -143,7 +121,7 @@ const Navbar = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {user ? (
+                <SignedIn>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger>Quick Access</NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -160,7 +138,7 @@ const Navbar = () => {
                       </ul>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
-                ) : null}
+                </SignedIn>
 
                 <NavigationMenuItem>
                   <Link href="/about" legacyBehavior passHref>
@@ -176,54 +154,33 @@ const Navbar = () => {
           </div>
           <div className="ml-auto flex items-center pb-3 pt-3">
             <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-3">
-              {user ? (
-                <>
-                  <Link
-                    href="/changelog"
-                    className={buttonVariants({ variant: "ghost" })}
-                  >
-                    Changelog
-                  </Link>
-                  <Link
-                    href="/account"
-                    className={buttonVariants({ variant: "outline" })}
-                  >
-                    My Account
-                  </Link>
-                  <Button
-                    variant="destructive"
-                    onClick={() =>
-                      signOut(getAuth())
-                        .then(() => {
-                          toast.info("You have been logged out!", {
-                            description: "See you again soon!",
-                          });
-                        })
-                        .catch((error) => {
-                          // An error happened.
-                        })
-                    }
-                  >
-                    Logout
-                  </Button>
-                  <span className='aria-hidden="true" h-6 w-px bg-gray-200'></span>
-                  <ModeToggle />
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className={buttonVariants({ variant: "outline" })}
-                  >
-                    Sign In
-                  </Link>
-                  <Link href="/sign-up" className={buttonVariants()}>
-                    Create Account
-                  </Link>
-                  <span className='aria-hidden="true" h-6 w-px bg-gray-200'></span>
-                  <ModeToggle />
-                </>
-              )}
+              <SignedIn>
+                <Link
+                  href="/changelog"
+                  className={buttonVariants({ variant: "ghost" })}
+                >
+                  Changelog
+                </Link>
+                <Link
+                  href="/account"
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  My Account
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+                <span aria-hidden="true" className="h-6 w-px bg-gray-200"></span>
+                <ModeToggle />
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button variant="outline">Sign In</Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button>Create Account</Button>
+                </SignUpButton>
+                <span aria-hidden="true" className="h-6 w-px bg-gray-200"></span>
+                <ModeToggle />
+              </SignedOut>
             </div>
           </div>
         </div>
@@ -255,64 +212,40 @@ const Navbar = () => {
                       About Us
                     </Link>
 
-                    {user ? (
+                    <SignedIn>
                       <Link
                         href="/qamobile"
                         className={buttonVariants({ variant: "ghost" })}
                       >
                         Quick Access
                       </Link>
-                    ) : null}
+                    </SignedIn>
                   </div>
 
                   <div className="flex flex-col items-center space-y-2 border-b border-t pb-3 pt-3">
-                    {user ? (
-                      <>
-                        <Link
-                          href="/changelog"
-                          className={buttonVariants({ variant: "ghost" })}
-                        >
-                          Changelog
-                        </Link>
-                        <Link
-                          href="/account"
-                          className={buttonVariants({ variant: "ghost" })}
-                        >
-                          My Account
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          onClick={() =>
-                            signOut(getAuth())
-                              .then(() => {
-                                toast.info("You have been logged out!", {
-                                  description: "See you again soon!",
-                                });
-                              })
-                              .catch((error) => {
-                                // An error happened.
-                              })
-                          }
-                        >
-                          Logout
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href="/login"
-                          className={buttonVariants({ variant: "ghost" })}
-                        >
-                          Sign In
-                        </Link>
-                        <Link
-                          href="/sign-up"
-                          className={`${buttonVariants({ variant: "ghost" })}`}
-                        >
-                          Create Account
-                        </Link>
-                      </>
-                    )}
+                    <SignedIn>
+                      <Link
+                        href="/changelog"
+                        className={buttonVariants({ variant: "ghost" })}
+                      >
+                        Changelog
+                      </Link>
+                      <Link
+                        href="/account"
+                        className={buttonVariants({ variant: "ghost" })}
+                      >
+                        My Account
+                      </Link>
+                      <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "h-9 w-9" } }} />
+                    </SignedIn>
+                    <SignedOut>
+                      <SignInButton mode="modal">
+                        <Button variant="ghost">Sign In</Button>
+                      </SignInButton>
+                      <SignUpButton mode="modal">
+                        <Button variant="ghost">Create Account</Button>
+                      </SignUpButton>
+                    </SignedOut>
                   </div>
                   <ModeToggleMobile />
                 </div>
