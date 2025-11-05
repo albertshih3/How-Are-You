@@ -2,12 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardBody, Chip } from "@nextui-org/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { NotebookPen, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
 import { useEncryption } from "@/contexts/EncryptionContext";
 import { decryptEntry } from "@/lib/crypto/encryption";
+import {
+  scaleFadeVariants,
+  hoverLift,
+  getStaggerDelay
+} from "@/lib/animations";
 
 interface Entry {
   _id: string;
@@ -103,8 +109,14 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
 
   if (entries.length === 0) {
     return (
-      <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur dark:border-white/5 dark:bg-slate-900/75 min-h-[240px] sm:min-h-[260px] lg:min-h-[280px]">
-        <CardBody className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={scaleFadeVariants}
+        whileHover={hoverLift}
+      >
+        <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
+          <CardBody className="flex h-full flex-col items-center justify-center gap-6 p-10 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             <NotebookPen className="h-7 w-7" />
           </div>
@@ -114,51 +126,67 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
           </p>
         </CardBody>
       </Card>
+      </motion.div>
     );
   }
 
   return (
-    <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur dark:border-white/5 dark:bg-slate-900/75 min-h-[240px] sm:min-h-[260px] lg:min-h-[280px]">
-      <CardBody className="flex h-full flex-col gap-4 p-5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
-              Journal feed
-            </p>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              Recent entries
-            </h2>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={scaleFadeVariants}
+      whileHover={hoverLift}
+    >
+      <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
+        <CardBody className="flex h-full flex-col gap-6 p-8 lg:p-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
+                Journal feed
+              </p>
+              <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                Recent entries
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Sparkles className="h-4 w-4" />
+              {entries.length} total
+            </div>
           </div>
-          <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            <Sparkles className="h-4 w-4" />
-            {entries.length} total
-          </div>
-        </div>
 
-        <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-5">
           {isDecrypting ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-sm text-slate-500">Decrypting entries...</div>
             </div>
           ) : (
-            decryptedEntries.map((entry) => {
-              const moodData = MOOD_TYPES[entry.moodType as MoodType];
-              const timeAgo = formatDistanceToNow(new Date(entry.timestamp), {
-                addSuffix: true,
-              });
+            <AnimatePresence mode="popLayout">
+              {decryptedEntries.map((entry, index) => {
+                const moodData = MOOD_TYPES[entry.moodType as MoodType];
+                const timeAgo = formatDistanceToNow(new Date(entry.timestamp), {
+                  addSuffix: true,
+                });
 
-              return (
-                <div
-                  key={entry._id}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_35px_60px_-30px_rgba(37,99,235,0.45)] dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-slate-600"
-                >
+                return (
+                  <motion.div
+                    key={entry._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{
+                      delay: getStaggerDelay(index, 0.08),
+                      duration: 0.4
+                    }}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] transition-shadow duration-300 hover:border-slate-300 hover:shadow-[0_35px_60px_-30px_rgba(37,99,235,0.45)] dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-slate-600"
+                  >
                   <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-100/80 via-white/20 to-transparent opacity-0 transition duration-300 group-hover:opacity-100 dark:from-slate-800/60" />
                   <div className="relative z-10 flex items-start gap-4">
                     <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-3xl shadow-inner dark:bg-slate-800">
                       {moodData.emoji}
                     </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex flex-wrap items-center gap-3">
                         <span className="text-base font-semibold text-slate-900 dark:text-white">
                           {moodData.label}
                         </span>
@@ -178,27 +206,36 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
 
                       {entry.decryptedTags && entry.decryptedTags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {entry.decryptedTags.map((tag) => (
-                            <Chip
+                          {entry.decryptedTags.map((tag, tagIndex) => (
+                            <motion.div
                               key={tag}
-                              size="sm"
-                              radius="full"
-                              variant="flat"
-                              className="bg-slate-100/80 text-xs font-medium text-slate-600 dark:bg-slate-800/80 dark:text-slate-300"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 + tagIndex * 0.05 }}
+                              whileHover={{ scale: 1.05 }}
                             >
-                              #{tag}
-                            </Chip>
+                              <Chip
+                                size="sm"
+                                radius="full"
+                                variant="flat"
+                                className="bg-slate-100/80 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700"
+                              >
+                                #{tag}
+                              </Chip>
+                            </motion.div>
                           ))}
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
-            })
+            })}
+            </AnimatePresence>
           )}
         </div>
       </CardBody>
     </Card>
+    </motion.div>
   );
 }

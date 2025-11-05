@@ -39,11 +39,22 @@ const articles = defineTable({
   title: v.string(),
   description: v.string(),
   imageUrl: v.optional(v.string()),
-  externalLink: v.string(),
+  // Internal article fields
+  content: v.optional(v.string()), // Full article content in markdown
+  authorId: v.optional(v.string()), // Reference to user who wrote it
+  authorType: v.optional(v.union(v.literal("admin"), v.literal("student"))), // Author type
+  authorName: v.optional(v.string()), // Display name for author
+  isInternal: v.boolean(), // Flag for internal vs external articles
+  publishedAt: v.number(), // Timestamp
+  status: v.union(v.literal("draft"), v.literal("published")), // For moderation
+  // External article fields
+  externalLink: v.optional(v.string()), // Made optional for internal articles
   tags: v.array(v.string()),
   category: v.string(),
 })
-  .index("by_category", ["category"]);
+  .index("by_category", ["category"])
+  .index("by_status", ["status"])
+  .index("by_author", ["authorId"]);
 
 export default defineSchema({
   users,

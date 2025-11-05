@@ -183,7 +183,7 @@ export function UnlockEncryptionDialog({ open }: UnlockEncryptionDialogProps) {
                   Cannot recover forgotten passphrase
                 </p>
                 <p className="text-amber-600 dark:text-amber-500">
-                  Your data is protected with end-to-end encryption. If you've forgotten your
+                  Your data is protected with end-to-end encryption. If you&apos;ve forgotten your
                   passphrase, there is no way to recover your encrypted journal entries.
                 </p>
                 <p className="text-amber-600 dark:text-amber-500">

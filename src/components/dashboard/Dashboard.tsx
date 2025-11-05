@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { api } from "@convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@nextui-org/react";
+import { motion } from "framer-motion";
 import {
   CalendarDays,
   Clock3,
@@ -25,6 +26,13 @@ import { InsightsCard } from "./InsightsCard";
 import { useEncryption } from "@/contexts/EncryptionContext";
 import { SetupEncryptionDialog } from "@/components/encryption/SetupEncryptionDialog";
 import { UnlockEncryptionDialog } from "@/components/encryption/UnlockEncryptionDialog";
+import {
+  fadeUpVariants,
+  containerVariants,
+  getStaggerDelay,
+  hoverLift,
+  tapScale
+} from "@/lib/animations";
 
 interface Entry {
   _id: string;
@@ -158,14 +166,22 @@ export function Dashboard() {
         <div className="absolute bottom-0 left-1/2 h-64 w-[80%] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-300/20 via-cyan-200/10 to-transparent blur-3xl dark:from-blue-500/20" />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
-        <section className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-8 py-10 text-white shadow-[0_25px_60px_-20px_rgba(79,70,229,0.55)] dark:border-white/10 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950">
+      <motion.div
+        className="mx-auto max-w-7xl px-6 pb-24 pt-12 sm:px-8 lg:px-12"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.section
+          variants={fadeUpVariants}
+          className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-10 py-12 text-white shadow-[0_25px_60px_-20px_rgba(79,70,229,0.55)] dark:border-white/10 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950 lg:px-12 lg:py-14"
+        >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff33_0,transparent_45%)] opacity-80" />
           <div className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute -bottom-32 left-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl" />
 
-          <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-xl space-y-4">
+          <div className="relative z-10 flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl space-y-6">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-white/70">
                 <Sparkles className="h-4 w-4" /> Daily pulse
               </span>
@@ -201,13 +217,21 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="grid w-full gap-4 sm:grid-cols-2">
-              {quickStats.map((stat) => {
+            <div className="grid w-full gap-6 sm:grid-cols-2">
+              {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
-                  <div
+                  <motion.div
                     key={stat.id}
-                    className="group relative overflow-hidden rounded-2xl border border-white/25 bg-white/10 p-5 shadow-lg shadow-black/10 backdrop-blur transition duration-200 hover:border-white/40"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: getStaggerDelay(index, 0.15),
+                      duration: 0.5,
+                      ease: [0.25, 0.46, 0.45, 0.94]
+                    }}
+                    whileHover={hoverLift}
+                    className="group relative overflow-hidden rounded-2xl border border-white/25 bg-white/10 p-6 shadow-lg shadow-black/10 backdrop-blur transition duration-200 hover:border-white/40"
                   >
                     <div className="absolute inset-x-0 -top-24 h-48 bg-gradient-to-b from-white/50 via-white/10 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
                     <div className="relative z-10 flex items-start gap-3">
@@ -222,31 +246,46 @@ export function Dashboard() {
                         <p className="text-xs text-white/70">{stat.helper}</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <div className="mt-12 grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div className="space-y-6 xl:col-span-1">
+        <motion.div
+          variants={fadeUpVariants}
+          className="mt-16 grid grid-cols-1 gap-8 lg:gap-10 xl:grid-cols-3"
+        >
+          <motion.div
+            variants={fadeUpVariants}
+            transition={{ delay: getStaggerDelay(0) }}
+            className="space-y-8 xl:col-span-1"
+          >
             <StreakCard
               currentStreak={streakData?.currentStreak ?? 0}
               longestStreak={streakData?.longestStreak ?? 0}
             />
             <InsightsCard entries={(recentEntries ?? []) as Entry[]} />
-          </div>
+          </motion.div>
 
-          <div className="xl:col-span-1">
+          <motion.div
+            variants={fadeUpVariants}
+            transition={{ delay: getStaggerDelay(1) }}
+            className="xl:col-span-1"
+          >
             <RecentEntriesList entries={(recentEntries ?? []) as Entry[]} />
-          </div>
+          </motion.div>
 
-          <div className="xl:col-span-1">
+          <motion.div
+            variants={fadeUpVariants}
+            transition={{ delay: getStaggerDelay(2) }}
+            className="xl:col-span-1"
+          >
             <ArticlesSection articles={articles ?? []} moodLabel={lastCheckInMood} />
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
       <div className="fixed bottom-5 right-5 z-50 lg:hidden">
         <LogEntryDialog>
