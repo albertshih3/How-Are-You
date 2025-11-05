@@ -139,3 +139,97 @@ export const deleteProfile = mutation({
     await ctx.db.delete(existing._id);
   },
 });
+
+// --- Encryption Key Management ---
+
+/**
+ * Store the user's wrapped encryption key and related metadata.
+ * This is called during initial encryption setup.
+ */
+export const storeEncryptionKey = mutation({
+  args: {
+    encryptedKey: v.string(),
+    salt: v.string(),
+    iv: v.string(),
+    iterations: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      encryptedKey: args.encryptedKey,
+      keySalt: args.salt,
+      keyIv: args.iv,
+      keyIterations: args.iterations,
+    });
+  },
+});
+
+/**
+ * Get the user's wrapped encryption key and related metadata.
+ * This is called when unlocking encryption with a passphrase.
+ */
+export const getEncryptionKey = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      encryptedKey: user.encryptedKey,
+      salt: user.keySalt,
+      iv: user.keyIv,
+      iterations: user.keyIterations,
+    };
+  },
+});
+
+/**
+ * Check if the user has encryption set up.
+ * This is used to determine if we should show setup vs unlock dialog.
+ */
+export const hasEncryptionSetup = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return false;
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    return !!(user?.encryptedKey);
+  },
+});

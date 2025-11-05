@@ -7,6 +7,7 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useMutation } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@convex/_generated/api";
+import { EncryptionProvider } from "@/contexts/EncryptionContext";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 if (!convexUrl) {
@@ -53,10 +54,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <NextUIProvider>
-          <ConvexUserSync />
-          {children}
-        </NextUIProvider>
+        <EncryptionProvider>
+          <NextUIProvider>
+            <ConvexUserSync />
+            {children}
+          </NextUIProvider>
+        </EncryptionProvider>
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );

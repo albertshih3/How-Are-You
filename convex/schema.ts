@@ -8,6 +8,11 @@ const users = defineTable({
   nickname: v.optional(v.string()),
   pronouns: v.optional(v.string()),
   birthday: v.optional(v.string()),
+  // Encryption fields
+  encryptedKey: v.optional(v.string()), // Base64 wrapped DEK
+  keySalt: v.optional(v.string()), // Base64 salt for PBKDF2
+  keyIv: v.optional(v.string()), // Base64 IV used for key wrapping
+  keyIterations: v.optional(v.number()), // PBKDF2 iteration count (e.g., 100000)
 })
   .index("by_userId", ["userId"])
   .searchIndex("search_by_nickname", {
@@ -19,8 +24,13 @@ const entries = defineTable({
   timestamp: v.number(),
   moodType: v.string(),
   moodIntensity: v.number(),
-  notes: v.optional(v.string()),
-  tags: v.optional(v.array(v.string())),
+  // Encrypted fields (new)
+  encryptedNotes: v.optional(v.string()), // Base64 ciphertext
+  encryptedTags: v.optional(v.string()), // Base64 encrypted JSON array
+  iv: v.optional(v.string()), // Base64 IV for this entry
+  // Legacy plaintext fields (DEPRECATED - kept for backward compatibility during migration)
+  notes: v.optional(v.string()), // DEPRECATED - will be removed after migration
+  tags: v.optional(v.array(v.string())), // DEPRECATED - will become v.optional() after migration
 })
   .index("by_userId", ["userId"])
   .index("by_userId_and_timestamp", ["userId", "timestamp"]);

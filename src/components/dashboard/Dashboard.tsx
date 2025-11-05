@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +13,7 @@ import {
   Flame,
   Sparkles,
   TrendingUp,
+  Lock,
 } from "lucide-react";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
@@ -21,6 +22,9 @@ import { LogEntryDialog } from "./LogEntryDialog";
 import { RecentEntriesList } from "./RecentEntriesList";
 import { ArticlesSection } from "./ArticlesSection";
 import { InsightsCard } from "./InsightsCard";
+import { useEncryption } from "@/contexts/EncryptionContext";
+import { SetupEncryptionDialog } from "@/components/encryption/SetupEncryptionDialog";
+import { UnlockEncryptionDialog } from "@/components/encryption/UnlockEncryptionDialog";
 
 interface Entry {
   _id: string;
@@ -35,6 +39,8 @@ interface Entry {
 
 export function Dashboard() {
   const { user, isLoaded } = useUser();
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
+  const { hasSetup, isUnlocked, isLoading: encryptionLoading } = useEncryption();
 
   const streakData = useQuery(api.streaks.getStreakData);
   const recentEntries = useQuery(api.entries.getRecentEntries, { limit: 8 });
@@ -117,7 +123,7 @@ export function Dashboard() {
     };
   }, [recentEntries, streakData]);
 
-  if (!isLoaded) {
+  if (!isLoaded || encryptionLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
@@ -130,8 +136,22 @@ export function Dashboard() {
 
   const firstName = user?.firstName || "there";
 
+  // Show setup dialog if encryption is not set up
+  const shouldShowSetup = !hasSetup && isLoaded;
+
+  // Show unlock dialog if encryption is set up but not unlocked
+  const shouldShowUnlock = hasSetup && !isUnlocked;
+
   return (
-    <div className="relative isolate">
+    <>
+      {/* Encryption Dialogs */}
+      <SetupEncryptionDialog
+        open={shouldShowSetup || showSetupDialog}
+        onOpenChange={setShowSetupDialog}
+      />
+      <UnlockEncryptionDialog open={shouldShowUnlock} />
+
+      <div className="relative isolate">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute left-[10%] top-0 h-64 w-64 rounded-full bg-gradient-to-b from-sky-300/30 to-transparent blur-3xl dark:from-sky-500/20" />
         <div className="absolute right-[5%] top-24 h-72 w-72 rounded-full bg-gradient-to-t from-indigo-400/30 via-purple-400/20 to-transparent blur-3xl dark:from-indigo-500/20" />
@@ -153,6 +173,12 @@ export function Dashboard() {
                 Hey {firstName}, ready for your next check-in?
               </h1>
               <p className="text-base text-white/80 sm:text-lg">{heroMessage}</p>
+              {isUnlocked && (
+                <div className="flex items-center gap-2 text-xs text-white/60">
+                  <Lock className="h-3 w-3" />
+                  <span>End-to-end encrypted</span>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-3">
                 <LogEntryDialog>
                   <Button
@@ -234,5 +260,6 @@ export function Dashboard() {
         </LogEntryDialog>
       </div>
     </div>
+    </>
   );
 }

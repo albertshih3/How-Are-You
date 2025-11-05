@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { EntryValidator, type TEntryValidator } from "@/lib/validators/entry-validator";
 import { MOOD_TYPES, COMMON_TAGS, type MoodType } from "@/lib/constants/moods";
 import { cn } from "@/lib/utils";
+import { useEncryption } from "@/contexts/EncryptionContext";
+import { encryptEntry } from "@/lib/crypto/encryption";
 
 interface LogEntryDialogProps {
   children?: ReactNode;
@@ -35,6 +37,7 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createEntry = useMutation(api.entries.createEntry);
+  const { decryptionKey, isUnlocked } = useEncryption();
 
   const {
     handleSubmit,
@@ -84,12 +87,42 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
   const onSubmit = async (data: TEntryValidator) => {
     try {
       setIsSubmitting(true);
-      await createEntry({
+
+      // Prepare entry data
+      const entryData: {
+        moodType: string;
+        moodIntensity: number;
+        encryptedNotes?: string;
+        encryptedTags?: string;
+        iv?: string;
+        notes?: string;
+        tags?: string[];
+      } = {
         moodType: data.moodType,
         moodIntensity: data.moodIntensity,
-        notes: data.notes || undefined,
-        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
-      });
+      };
+
+      // Encrypt notes and tags if encryption is unlocked
+      if (isUnlocked && decryptionKey) {
+        const notesToEncrypt = data.notes || "";
+        const tagsToEncrypt = data.tags && data.tags.length > 0 ? data.tags : [];
+
+        const { encryptedNotes, encryptedTags, iv } = await encryptEntry(
+          notesToEncrypt,
+          tagsToEncrypt,
+          decryptionKey
+        );
+
+        entryData.encryptedNotes = encryptedNotes;
+        entryData.encryptedTags = encryptedTags;
+        entryData.iv = iv;
+      } else {
+        // Fallback to plaintext (for backward compatibility or if encryption not set up)
+        entryData.notes = data.notes || undefined;
+        entryData.tags = data.tags && data.tags.length > 0 ? data.tags : undefined;
+      }
+
+      await createEntry(entryData);
 
       handleDialogChange(false);
 

@@ -16,6 +16,11 @@ export const createEntry = mutation({
   args: {
     moodType: v.string(),
     moodIntensity: v.number(),
+    // New encrypted fields
+    encryptedNotes: v.optional(v.string()),
+    encryptedTags: v.optional(v.string()),
+    iv: v.optional(v.string()),
+    // Legacy plaintext fields (kept for backward compatibility)
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
   },
@@ -32,8 +37,13 @@ export const createEntry = mutation({
       timestamp: Date.now(),
       moodType: args.moodType,
       moodIntensity: args.moodIntensity,
+      // Store encrypted fields if provided
+      encryptedNotes: args.encryptedNotes,
+      encryptedTags: args.encryptedTags,
+      iv: args.iv,
+      // Fallback to plaintext fields for backward compatibility
       notes: args.notes,
-      tags: args.tags,
+      tags: args.tags ?? [],
     };
 
     return ctx.db.insert("entries", entry);
@@ -129,5 +139,44 @@ export const deleteEntry = mutation({
     }
 
     await ctx.db.delete(args.entryId);
+  },
+});
+
+/**
+ * Update an entry to add encrypted fields and clear plaintext fields.
+ * Used during migration from plaintext to encrypted storage.
+ */
+export const updateEntryEncryption = mutation({
+  args: {
+    entryId: v.id("entries"),
+    encryptedNotes: v.string(),
+    encryptedTags: v.string(),
+    iv: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to updateEntryEncryption");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const entry = await ctx.db.get(args.entryId);
+    if (!entry) {
+      throw new Error("Entry not found");
+    }
+
+    if (entry.userId !== userId) {
+      throw new Error("Unauthorized to update this entry");
+    }
+
+    // Update with encrypted fields and clear plaintext fields
+    await ctx.db.patch(args.entryId, {
+      encryptedNotes: args.encryptedNotes,
+      encryptedTags: args.encryptedTags,
+      iv: args.iv,
+      notes: undefined, // Clear plaintext
+      tags: [], // Clear plaintext
+    });
   },
 });
