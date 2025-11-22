@@ -71,7 +71,7 @@ export async function deriveKeyFromPassphrase(
   return await window.crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: salt,
+      salt: salt as any,
       iterations: PBKDF2_ITERATIONS,
       hash: "SHA-256",
     },
@@ -230,6 +230,66 @@ export async function decryptData(
   }
 }
 
+/**
+ * Encrypt binary data (Blob/ArrayBuffer) using AES-GCM.
+ *
+ * @param data - ArrayBuffer data to encrypt
+ * @param key - AES-GCM encryption key (DEK)
+ * @returns Object with encrypted ArrayBuffer and base64-encoded IV
+ */
+export async function encryptBlob(
+  data: ArrayBuffer,
+  key: CryptoKey
+): Promise<{ encryptedData: ArrayBuffer; iv: string }> {
+  // Generate unique random IV for this encryption
+  const iv = window.crypto.getRandomValues(new Uint8Array(AES_GCM_IV_SIZE));
+
+  // Encrypt with AES-GCM
+  const encryptedBuffer = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv: iv,
+    },
+    key,
+    data
+  );
+
+  return {
+    encryptedData: encryptedBuffer,
+    iv: arrayBufferToBase64(iv),
+  };
+}
+
+/**
+ * Decrypt binary data (Blob/ArrayBuffer) using AES-GCM.
+ *
+ * @param encryptedData - Encrypted ArrayBuffer
+ * @param ivB64 - Base64-encoded IV
+ * @param key - AES-GCM decryption key (DEK)
+ * @returns Decrypted ArrayBuffer
+ */
+export async function decryptBlob(
+  encryptedData: ArrayBuffer,
+  ivB64: string,
+  key: CryptoKey
+): Promise<ArrayBuffer> {
+  const iv = base64ToArrayBuffer(ivB64);
+
+  try {
+    // Decrypt with AES-GCM
+    return await window.crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: new Uint8Array(iv),
+      },
+      key,
+      encryptedData
+    );
+  } catch (error) {
+    throw new Error("Failed to decrypt blob. Wrong key or corrupted data.");
+  }
+}
+
 // --- Entry-Specific Helpers ---
 
 /**
@@ -352,13 +412,19 @@ export function generateSalt(): Uint8Array {
 }
 
 /**
- * Convert ArrayBuffer to Base64 string.
+ * Convert ArrayBuffer or ArrayBufferView to Base64 string.
  *
- * @param buffer - ArrayBuffer to convert
+ * @param buffer - ArrayBuffer or ArrayBufferView to convert
  * @returns Base64-encoded string
  */
-export function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
+export function arrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
+  let bytes: Uint8Array;
+  if (ArrayBuffer.isView(buffer)) {
+    bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  } else {
+    bytes = new Uint8Array(buffer);
+  }
+
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);

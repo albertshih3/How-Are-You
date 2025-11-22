@@ -52,9 +52,9 @@ export function Dashboard() {
     const averageIntensity =
       weeklyEntries.length > 0
         ? (
-            weeklyEntries.reduce((sum, entry) => sum + entry.moodIntensity, 0) /
-            weeklyEntries.length
-          ).toFixed(1)
+          weeklyEntries.reduce((sum, entry) => sum + entry.moodIntensity, 0) /
+          weeklyEntries.length
+        ).toFixed(1)
         : null;
     const lastEntry = entries[0];
     const lastEntryMood = lastEntry
@@ -149,47 +149,45 @@ export function Dashboard() {
       />
       <UnlockEncryptionDialog open={shouldShowUnlock} />
 
-      <div className="relative isolate">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-[10%] top-0 h-64 w-64 rounded-full bg-gradient-to-b from-sky-300/30 to-transparent blur-3xl dark:from-sky-500/20" />
-        <div className="absolute right-[5%] top-24 h-72 w-72 rounded-full bg-gradient-to-t from-indigo-400/30 via-purple-400/20 to-transparent blur-3xl dark:from-indigo-500/20" />
-        <div className="absolute bottom-0 left-1/2 h-64 w-[80%] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-300/20 via-cyan-200/10 to-transparent blur-3xl dark:from-blue-500/20" />
-      </div>
+      <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950">
+        {/* Subtle background pattern instead of heavy blobs */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
 
-      <motion.div
-        className="mx-auto w-full max-w-[115rem] px-6 pb-24 pt-12 sm:px-8 lg:px-12 2xl:px-16"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.section
-          variants={fadeUpVariants}
-          className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-10 py-12 text-white shadow-[0_25px_60px_-20px_rgba(79,70,229,0.55)] dark:border-white/10 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950 lg:px-12 lg:py-14 xl:px-14 xl:py-16 2xl:px-16 2xl:py-16"
+        <motion.div
+          className="relative mx-auto w-full max-w-[115rem] px-6 pb-24 pt-12 sm:px-8 lg:px-12 2xl:px-16"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff33_0,transparent_45%)] opacity-80" />
-          <div className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
-          <div className="absolute -bottom-32 left-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl" />
-
-          <div className="relative z-10 flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+          <motion.section
+            variants={fadeUpVariants}
+            className="mb-16 flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between"
+          >
             <div className="max-w-xl space-y-6 2xl:max-w-2xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-white/70">
-                <Sparkles className="h-4 w-4" /> Daily pulse
-              </span>
-              <h1 className="text-3xl font-semibold sm:text-4xl">
-                Hey {firstName}, ready for your next check-in?
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+                <span>Daily pulse</span>
+              </div>
+
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+                Hey {firstName},<br />
+                <span className="text-slate-500 dark:text-slate-400">ready to check in?</span>
               </h1>
-              <p className="text-base text-white/80 sm:text-lg">{heroMessage}</p>
+
+              <p className="text-lg text-slate-600 dark:text-slate-400">{heroMessage}</p>
+
               {isUnlocked && (
-                <div className="flex items-center gap-2 text-xs text-white/60">
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500">
                   <Lock className="h-3 w-3" />
                   <span>End-to-end encrypted</span>
                 </div>
               )}
-              <div className="flex flex-wrap items-center gap-3">
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <LogEntryDialog>
                   <Button
                     size="lg"
-                    className="group flex items-center gap-2 rounded-2xl bg-white/20 px-6 py-6 text-base font-semibold text-white backdrop-blur transition duration-200 hover:bg-white/30"
+                    className="group flex items-center gap-2 rounded-full bg-slate-900 px-8 py-6 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 dark:bg-white dark:text-slate-900 dark:shadow-white/10 dark:hover:bg-slate-100"
                   >
                     <Sparkles className="h-5 w-5 transition-transform duration-200 group-hover:rotate-12" />
                     Log a check-in
@@ -198,16 +196,16 @@ export function Dashboard() {
                 <Button
                   as={Link}
                   href="/account"
-                  variant="flat"
+                  variant="light"
                   size="lg"
-                  className="rounded-2xl border border-white/40 bg-white/10 px-6 py-6 text-base font-semibold text-white hover:bg-white/20"
+                  className="rounded-full px-8 py-6 text-base font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                 >
                   View profile
                 </Button>
               </div>
             </div>
 
-            <div className="grid w-full gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-8">
+            <div className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
@@ -216,79 +214,78 @@ export function Dashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
-                      delay: getStaggerDelay(index, 0.15),
+                      delay: getStaggerDelay(index, 0.1),
                       duration: 0.5,
                       ease: [0.25, 0.46, 0.45, 0.94]
                     }}
-                    whileHover={hoverLift}
-                    className="group relative overflow-hidden rounded-2xl border border-white/25 bg-white/10 p-6 shadow-lg shadow-black/10 backdrop-blur transition duration-200 hover:border-white/40"
+                    whileHover={{ y: -2 }}
+                    className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 transition-all hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                   >
-                    <div className="absolute inset-x-0 -top-24 h-48 bg-gradient-to-b from-white/50 via-white/10 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-                    <div className="relative z-10 flex items-start gap-3">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium uppercase tracking-wide text-white/70">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
                           {stat.label}
-                        </p>
-                        <p className="text-lg font-semibold">{stat.value}</p>
-                        <p className="text-xs text-white/70">{stat.helper}</p>
+                        </span>
+                      </div>
+
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{stat.helper}</p>
                       </div>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
-          </div>
-        </motion.section>
-
-        <motion.div
-          variants={fadeUpVariants}
-          className="mt-16 grid grid-cols-1 gap-8 lg:gap-12 xl:[grid-template-columns:1.1fr_1.3fr_1.1fr] 2xl:[grid-template-columns:1.15fr_1.5fr_1.2fr] 2xl:gap-16"
-        >
-          <motion.div
-            variants={fadeUpVariants}
-            transition={{ delay: getStaggerDelay(0) }}
-            className="space-y-8 xl:col-span-1"
-          >
-            <StreakCard
-              currentStreak={streakData?.currentStreak ?? 0}
-              longestStreak={streakData?.longestStreak ?? 0}
-            />
-            <InsightsCard entries={(recentEntries ?? []) as Doc<"entries">[]} />
-          </motion.div>
+          </motion.section>
 
           <motion.div
             variants={fadeUpVariants}
-            transition={{ delay: getStaggerDelay(1) }}
-            className="xl:col-span-1"
+            className="grid grid-cols-1 gap-8 lg:gap-12 xl:[grid-template-columns:1fr_1.5fr_1fr] 2xl:gap-16"
           >
-            <RecentEntriesList entries={(recentEntries ?? []) as Doc<"entries">[]} />
-          </motion.div>
+            <motion.div
+              variants={fadeUpVariants}
+              transition={{ delay: getStaggerDelay(0) }}
+              className="space-y-8"
+            >
+              <StreakCard
+                currentStreak={streakData?.currentStreak ?? 0}
+                longestStreak={streakData?.longestStreak ?? 0}
+              />
+              <InsightsCard entries={(recentEntries ?? []) as Doc<"entries">[]} />
+            </motion.div>
 
-          <motion.div
-            variants={fadeUpVariants}
-            transition={{ delay: getStaggerDelay(2) }}
-            className="xl:col-span-1"
-          >
-            <ArticlesSection articles={articles ?? []} moodLabel={lastCheckInMood} />
+            <motion.div
+              variants={fadeUpVariants}
+              transition={{ delay: getStaggerDelay(1) }}
+            >
+              <RecentEntriesList entries={(recentEntries ?? []) as Doc<"entries">[]} />
+            </motion.div>
+
+            <motion.div
+              variants={fadeUpVariants}
+              transition={{ delay: getStaggerDelay(2) }}
+            >
+              <ArticlesSection articles={articles ?? []} moodLabel={lastCheckInMood} />
+            </motion.div>
           </motion.div>
         </motion.div>
-      </motion.div>
 
-      <div className="fixed bottom-5 right-5 z-50 lg:hidden">
-        <LogEntryDialog>
-          <Button
-            isIconOnly
-            size="lg"
-            className="h-14 w-14 rounded-2xl bg-blue-600 text-2xl font-semibold text-white shadow-lg shadow-blue-500/40 transition duration-200 hover:bg-blue-500"
-          >
-            +
-          </Button>
-        </LogEntryDialog>
+        <div className="fixed bottom-6 right-6 z-50 lg:hidden">
+          <LogEntryDialog>
+            <Button
+              isIconOnly
+              size="lg"
+              className="h-14 w-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/30 transition-transform hover:scale-105 active:scale-95 dark:bg-white dark:text-slate-900"
+            >
+              +
+            </Button>
+          </LogEntryDialog>
+        </div>
       </div>
-    </div>
     </>
   );
 }

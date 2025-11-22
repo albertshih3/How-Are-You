@@ -28,6 +28,8 @@ export const createEntry = mutation({
     weather: v.optional(v.string()),
     socialContext: v.optional(v.array(v.string())),
     photoUrl: v.optional(v.string()),
+    encryptedImageStorageId: v.optional(v.string()),
+    encryptedImageIv: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -54,6 +56,8 @@ export const createEntry = mutation({
       weather: args.weather,
       socialContext: args.socialContext,
       photoUrl: args.photoUrl,
+      encryptedImageStorageId: args.encryptedImageStorageId,
+      encryptedImageIv: args.encryptedImageIv,
     };
 
     return ctx.db.insert("entries", entry);
@@ -205,6 +209,8 @@ export const updateEntry = mutation({
     weather: v.optional(v.string()),
     socialContext: v.optional(v.array(v.string())),
     photoUrl: v.optional(v.string()),
+    encryptedImageStorageId: v.optional(v.string()),
+    encryptedImageIv: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -235,7 +241,20 @@ export const updateEntry = mutation({
     if (args.weather !== undefined) updates.weather = args.weather;
     if (args.socialContext !== undefined) updates.socialContext = args.socialContext;
     if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl;
+    if (args.encryptedImageStorageId !== undefined) updates.encryptedImageStorageId = args.encryptedImageStorageId;
+    if (args.encryptedImageIv !== undefined) updates.encryptedImageIv = args.encryptedImageIv;
 
     await ctx.db.patch(args.entryId, updates);
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to generateUploadUrl");
+    }
+    return await ctx.storage.generateUploadUrl();
   },
 });

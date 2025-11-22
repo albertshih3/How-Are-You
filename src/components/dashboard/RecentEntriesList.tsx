@@ -126,15 +126,15 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
       >
         <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
           <CardBody className="flex h-full flex-col items-center justify-center gap-6 p-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            <NotebookPen className="h-7 w-7" />
-          </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Recent entries</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Your story begins with the next check-in. Capture a moment to see it here.
-          </p>
-        </CardBody>
-      </Card>
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <NotebookPen className="h-7 w-7" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Recent entries</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your story begins with the next check-in. Capture a moment to see it here.
+            </p>
+          </CardBody>
+        </Card>
       </motion.div>
     );
   }
@@ -147,128 +147,118 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
         variants={scaleFadeVariants}
         whileHover={hoverLift}
       >
-        <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
-          <CardBody className="flex h-full flex-col gap-7 p-9 lg:p-11 xl:p-12">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
-                Journal feed
-              </p>
-              <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                Recent entries
-              </h2>
+        <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+          <CardBody className="flex h-full flex-col gap-6 p-6 xl:p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Journal feed
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                  Recent entries
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                {entries.length} total
+              </div>
             </div>
-            <div className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              <Sparkles className="h-4 w-4" />
-              {entries.length} total
-            </div>
-          </div>
 
-          <div className="flex-1 space-y-6">
-          {isDecrypting ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-sm text-slate-500">Decrypting entries...</div>
-            </div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {decryptedEntries.map((entry, index) => {
-                const moodData = MOOD_TYPES[entry.moodType as MoodType];
-                const timeAgo = formatDistanceToNow(new Date(entry.timestamp), {
-                  addSuffix: true,
-                });
+            <div className="flex-1 space-y-4">
+              {isDecrypting ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-sm text-slate-500">Decrypting entries...</div>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {decryptedEntries.map((entry, index) => {
+                    const moodData = MOOD_TYPES[entry.moodType as MoodType];
+                    const timeAgo = formatDistanceToNow(new Date(entry.timestamp), {
+                      addSuffix: true,
+                    });
 
-                return (
-                  <motion.div
-                    key={entry._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{
-                      delay: getStaggerDelay(index, 0.08),
-                      duration: 0.4
-                    }}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] transition-shadow duration-300 hover:border-slate-300 hover:shadow-[0_35px_60px_-30px_rgba(37,99,235,0.45)] dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-slate-600 xl:p-7"
-                  >
-                  <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-100/80 via-white/20 to-transparent opacity-0 transition duration-300 group-hover:opacity-100 dark:from-slate-800/60" />
-
-                    {/* Edit and Delete Buttons */}
-                    <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleEdit(entry)}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                        aria-label="Edit entry"
+                    return (
+                      <motion.div
+                        key={entry._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{
+                          delay: getStaggerDelay(index, 0.08),
+                          duration: 0.4
+                        }}
+                        className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 p-5 transition-all hover:border-slate-200 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
                       >
-                        <Pencil className="h-4 w-4" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleDelete(entry)}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-red-100 hover:text-red-600 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                        aria-label="Delete entry"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </motion.button>
-                    </div>
-
-                    <div className="relative z-10 flex items-start gap-5">
-                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-4xl shadow-inner dark:bg-slate-800">
-                      {moodData.emoji}
-                    </div>
-                    <div className="flex-1 space-y-4">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-lg font-semibold text-slate-900 dark:text-white">
-                          {moodData.label}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          Intensity {entry.moodIntensity}/10
-                        </span>
-                        <span className="ml-auto text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                          {timeAgo}
-                        </span>
-                      </div>
-
-                      {entry.decryptedNotes && (
-                        <p className="text-sm text-slate-600 transition duration-200 dark:text-slate-400">
-                          {entry.decryptedNotes}
-                        </p>
-                      )}
-
-                      {entry.decryptedTags && entry.decryptedTags.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {entry.decryptedTags.map((tag, tagIndex) => (
-                            <motion.div
-                              key={tag}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.3 + tagIndex * 0.05 }}
-                              whileHover={{ scale: 1.05 }}
-                            >
-                              <Chip
-                                size="sm"
-                                radius="full"
-                                variant="flat"
-                                className="bg-slate-100/80 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700"
-                              >
-                                #{tag}
-                              </Chip>
-                            </motion.div>
-                          ))}
+                        {/* Edit and Delete Buttons */}
+                        <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleEdit(entry)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm transition-colors hover:text-blue-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-blue-400"
+                            aria-label="Edit entry"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleDelete(entry)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm transition-colors hover:text-red-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-red-400"
+                            aria-label="Delete entry"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </motion.button>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-            </AnimatePresence>
-          )}
-        </div>
-      </CardBody>
-    </Card>
+
+                        <div className="relative z-10 flex items-start gap-4">
+                          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm dark:bg-slate-800">
+                            {moodData.emoji}
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                              <span className="text-base font-semibold text-slate-900 dark:text-white">
+                                {moodData.label}
+                              </span>
+                              <span className="rounded-full bg-slate-200/50 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                Intensity {entry.moodIntensity}/10
+                              </span>
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                {timeAgo}
+                              </span>
+                            </div>
+
+                            {entry.decryptedNotes && (
+                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                                {entry.decryptedNotes}
+                              </p>
+                            )}
+
+                            {entry.decryptedTags && entry.decryptedTags.length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {entry.decryptedTags.map((tag, tagIndex) => (
+                                  <Chip
+                                    key={tag}
+                                    size="sm"
+                                    radius="full"
+                                    variant="flat"
+                                    className="h-6 bg-white px-2 text-[10px] font-medium text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-400"
+                                  >
+                                    #{tag}
+                                  </Chip>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       </motion.div>
 
       {/* Edit Entry Dialog */}
