@@ -17,20 +17,10 @@ import {
   scaleFadeVariants,
   getStaggerDelay
 } from "@/lib/animations";
-
-interface Entry {
-  _id: string;
-  _creationTime: number;
-  userId: string;
-  timestamp: number;
-  moodType: string;
-  moodIntensity: number;
-  notes?: string;
-  tags?: string[];
-}
+import { Doc } from "@convex/_generated/dataModel";
 
 interface InsightsCardProps {
-  entries: Entry[];
+  entries: Doc<"entries">[];
 }
 
 export function InsightsCard({ entries }: InsightsCardProps) {
@@ -121,7 +111,7 @@ export function InsightsCard({ entries }: InsightsCardProps) {
       whileHover={hoverLift}
     >
       <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
-        <CardBody className="flex h-full flex-col gap-6 p-8 lg:p-10">
+        <CardBody className="flex h-full flex-col gap-7 p-9 lg:p-11 xl:gap-8 xl:p-12">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
@@ -136,7 +126,7 @@ export function InsightsCard({ entries }: InsightsCardProps) {
             </div>
           </div>
 
-          <div className="grid flex-1 gap-6 sm:grid-cols-2">
+          <div className="grid flex-1 gap-7 sm:grid-cols-2 xl:gap-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

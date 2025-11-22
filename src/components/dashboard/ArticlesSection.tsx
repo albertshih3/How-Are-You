@@ -68,7 +68,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
       variants={scaleFadeVariants}
     >
       <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur dark:border-white/5 dark:bg-slate-900/75">
-        <CardBody className="flex h-full flex-col gap-6 p-8 lg:p-10">
+        <CardBody className="flex h-full flex-col gap-7 p-9 lg:p-11 xl:p-12 xl:gap-8">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -96,7 +96,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
           )}
         </div>
 
-        <div className="flex-1 space-y-6">
+    <div className="flex-1 space-y-7">
           {/* Featured Article (First One) - Larger, Prominent */}
           {featuredArticle && (
             <motion.div
@@ -145,7 +145,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
                   )}
 
                   {/* Content */}
-                  <div className="relative z-10 space-y-5 p-7">
+                  <div className="relative z-10 space-y-6 p-8 xl:p-9">
                     <div className="space-y-3">
                       <h3 className="text-2xl font-bold leading-tight text-slate-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
                         {featuredArticle.title}
@@ -175,7 +175,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center justify-between pt-3">
                       {featuredArticle.isInternal && featuredArticle.authorName && (
                         <span className="text-sm text-slate-500 dark:text-slate-400">
                           By {featuredArticle.authorName}
@@ -194,7 +194,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
 
           {/* Regular Articles - Smaller cards */}
           {regularArticles.length > 0 && (
-            <div className="space-y-5">
+            <div className="space-y-6">
               {regularArticles.map((article, index) => (
                 <motion.div
                   key={article._id}
@@ -213,10 +213,10 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
                       {/* Hover gradient overlay */}
                       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-slate-100/80 via-white/20 to-transparent opacity-0 transition duration-300 group-hover:opacity-100 dark:from-slate-800/60" />
 
-                      <div className="relative z-10 flex gap-5 p-5">
+                      <div className="relative z-10 flex gap-6 p-6 xl:p-7">
                         {/* Compact image on the side */}
                         {article.imageUrl && (
-                          <div className="relative h-24 w-32 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100 dark:border-slate-700/60 dark:bg-slate-800">
+                          <div className="relative h-28 w-36 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100 dark:border-slate-700/60 dark:bg-slate-800">
                             <motion.div
                               whileHover={{ scale: 1.05 }}
                               transition={{ duration: 0.3 }}
@@ -235,7 +235,7 @@ export function ArticlesSection({ articles, moodLabel }: ArticlesSectionProps) {
                         )}
 
                         {/* Content */}
-                        <div className="flex flex-1 flex-col gap-3">
+                          <div className="flex flex-1 flex-col gap-4">
                           <div className="space-y-2">
                             <div className="flex items-start justify-between gap-3">
                               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-400">

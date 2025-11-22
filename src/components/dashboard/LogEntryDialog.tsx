@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Slider, Checkbox, Textarea } from "@nextui-org/react";
+import { Slider, Checkbox, Textarea, Input } from "@nextui-org/react";
+import { MapPin, CloudSun, Users, Image as ImageIcon } from "lucide-react";
 
 import {
   Dialog,
@@ -23,20 +24,35 @@ import { cn } from "@/lib/utils";
 import { useEncryption } from "@/contexts/EncryptionContext";
 import { encryptEntry } from "@/lib/crypto/encryption";
 
+import { DecryptedEntry } from "@/types/entry";
+
 interface LogEntryDialogProps {
   children?: ReactNode;
   onSuccess?: () => void;
+  entryToEdit?: DecryptedEntry | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
-export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
-  const [intensity, setIntensity] = useState(5);
-  const [notes, setNotes] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+export function LogEntryDialog({ children, onSuccess, entryToEdit, open: controlledOpen, onOpenChange: controlledOnOpenChange, hideTrigger }: LogEntryDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen;
+
+  const [selectedMood, setSelectedMood] = useState<MoodType | null>(entryToEdit?.moodType as MoodType || null);
+  const [intensity, setIntensity] = useState(entryToEdit?.moodIntensity || 5);
+  const [notes, setNotes] = useState(entryToEdit?.decryptedNotes || entryToEdit?.notes || "");
+  const [selectedTags, setSelectedTags] = useState<string[]>(entryToEdit?.decryptedTags || entryToEdit?.tags || []);
+  const [location, setLocation] = useState(entryToEdit?.location || "");
+  const [weather, setWeather] = useState(entryToEdit?.weather || "");
+  const [socialContext, setSocialContext] = useState<string[]>(entryToEdit?.socialContext || []);
+  const [photoUrl, setPhotoUrl] = useState(entryToEdit?.photoUrl || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createEntry = useMutation(api.entries.createEntry);
+  const updateEntry = useMutation(api.entries.updateEntry);
   const { decryptionKey, isUnlocked } = useEncryption();
 
   const {
@@ -47,27 +63,67 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
   } = useForm<TEntryValidator>({
     resolver: zodResolver(EntryValidator),
     defaultValues: {
-      moodType: undefined,
-      moodIntensity: 5,
-      notes: "",
-      tags: [],
+      moodType: entryToEdit?.moodType as MoodType || undefined,
+      moodIntensity: entryToEdit?.moodIntensity || 5,
+      notes: entryToEdit?.decryptedNotes || entryToEdit?.notes || "",
+      tags: entryToEdit?.decryptedTags || entryToEdit?.tags || [],
+      location: entryToEdit?.location || "",
+      weather: entryToEdit?.weather || "",
+      socialContext: entryToEdit?.socialContext || [],
+      photoUrl: entryToEdit?.photoUrl || "",
     },
   });
+
+  // Reset form when entryToEdit changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      if (entryToEdit) {
+        setSelectedMood(entryToEdit.moodType as MoodType);
+        setIntensity(entryToEdit.moodIntensity);
+        setNotes(entryToEdit.decryptedNotes || entryToEdit.notes || "");
+        setSelectedTags(entryToEdit.decryptedTags || entryToEdit.tags || []);
+        setLocation(entryToEdit.location || "");
+        setWeather(entryToEdit.weather || "");
+        setSocialContext(entryToEdit.socialContext || []);
+        setPhotoUrl(entryToEdit.photoUrl || "");
+
+        setValue("moodType", entryToEdit.moodType as MoodType);
+        setValue("moodIntensity", entryToEdit.moodIntensity);
+        setValue("notes", entryToEdit.decryptedNotes || entryToEdit.notes || "");
+        setValue("tags", entryToEdit.decryptedTags || entryToEdit.tags || []);
+        setValue("location", entryToEdit.location || "");
+        setValue("weather", entryToEdit.weather || "");
+        setValue("socialContext", entryToEdit.socialContext || []);
+        setValue("photoUrl", entryToEdit.photoUrl || "");
+      } else {
+        // Reset to defaults if not editing
+        // Only reset if we just opened the dialog and weren't already editing
+      }
+    }
+  }, [open, entryToEdit, setValue]);
 
   const moodDetails = selectedMood ? MOOD_TYPES[selectedMood] : null;
 
   const handleDialogChange = (isOpen: boolean) => {
-    setOpen(isOpen);
+    if (setOpen) setOpen(isOpen);
 
-    if (!isOpen) {
+    if (!isOpen && !entryToEdit) {
       setSelectedMood(null);
       setIntensity(5);
       setNotes("");
       setSelectedTags([]);
+      setLocation("");
+      setWeather("");
+      setSocialContext([]);
+      setPhotoUrl("");
       reset();
       setValue("moodIntensity", 5);
       setValue("tags", []);
       setValue("notes", "");
+      setValue("location", "");
+      setValue("weather", "");
+      setValue("socialContext", []);
+      setValue("photoUrl", "");
     }
   };
 
@@ -97,9 +153,17 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
         iv?: string;
         notes?: string;
         tags?: string[];
+        location?: string;
+        weather?: string;
+        socialContext?: string[];
+        photoUrl?: string;
       } = {
         moodType: data.moodType,
         moodIntensity: data.moodIntensity,
+        location: data.location,
+        weather: data.weather,
+        socialContext: data.socialContext,
+        photoUrl: data.photoUrl,
       };
 
       // Encrypt notes and tags if encryption is unlocked
@@ -107,6 +171,7 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
         const notesToEncrypt = data.notes || "";
         const tagsToEncrypt = data.tags && data.tags.length > 0 ? data.tags : [];
 
+        // Always generate a NEW IV for security (never reuse IVs with AES-GCM)
         const { encryptedNotes, encryptedTags, iv } = await encryptEntry(
           notesToEncrypt,
           tagsToEncrypt,
@@ -119,10 +184,18 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
       } else {
         // Fallback to plaintext (for backward compatibility or if encryption not set up)
         entryData.notes = data.notes || undefined;
-        entryData.tags = data.tags && data.tags.length > 0 ? data.tags : undefined;
+        entryData.tags = data.tags && data.tags.length > 0 ? data.tags : [];
       }
 
-      await createEntry(entryData);
+      // Update existing entry or create new entry
+      if (entryToEdit) {
+        await updateEntry({
+          entryId: entryToEdit._id,
+          ...entryData,
+        });
+      } else {
+        await createEntry(entryData);
+      }
 
       handleDialogChange(false);
 
@@ -130,7 +203,7 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
         onSuccess();
       }
     } catch (error) {
-      console.error("Error creating entry:", error);
+      console.error("Error saving entry:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -138,16 +211,17 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogTrigger asChild>
-        {children || (
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+      {!children && !entryToEdit && !hideTrigger && (
+        <DialogTrigger asChild>
           <Button
             size="lg"
             className="w-full rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-base font-semibold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(79,70,229,0.55)] transition duration-200 hover:opacity-90 sm:w-auto"
           >
             Log How You&apos;re Feeling
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden rounded-[2.25rem] border border-white/20 bg-white/95 p-0 shadow-[0_45px_120px_-45px_rgba(30,64,175,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/90">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -161,7 +235,7 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
             <DialogTitle className="text-4xl font-bold text-slate-900 dark:text-white">
-              How are you feeling?
+              {entryToEdit ? "Edit entry" : "How are you feeling?"}
             </DialogTitle>
             <DialogDescription className="text-base leading-relaxed text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
               Take a moment to check in with yourself
@@ -305,6 +379,96 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
                       </div>
                     </div>
 
+                    {/* New Metadata Fields */}
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" /> Location
+                          </div>
+                        </label>
+                        <Input
+                          placeholder="Where are you?"
+                          value={location}
+                          onValueChange={(val) => {
+                            setLocation(val);
+                            setValue("location", val);
+                          }}
+                          classNames={{
+                            inputWrapper: "bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <div className="flex items-center gap-2">
+                            <CloudSun className="h-4 w-4" /> Weather
+                          </div>
+                        </label>
+                        <Input
+                          placeholder="Sunny, Rainy, etc."
+                          value={weather}
+                          onValueChange={(val) => {
+                            setWeather(val);
+                            setValue("weather", val);
+                          }}
+                          classNames={{
+                            inputWrapper: "bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" /> Social Context
+                        </div>
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Alone", "With Family", "With Friends", "With Partner", "With Colleagues", "In Public"].map((ctx) => (
+                          <button
+                            key={ctx}
+                            type="button"
+                            onClick={() => {
+                              const newContext = socialContext.includes(ctx)
+                                ? socialContext.filter((c) => c !== ctx)
+                                : [...socialContext, ctx];
+                              setSocialContext(newContext);
+                              setValue("socialContext", newContext);
+                            }}
+                            className={cn(
+                              "rounded-xl px-4 py-2 text-xs font-medium transition-all duration-200",
+                              socialContext.includes(ctx)
+                                ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ring-1 ring-indigo-500/30"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+                            )}
+                          >
+                            {ctx}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" /> Photo URL (Optional)
+                        </div>
+                      </label>
+                      <Input
+                        placeholder="https://..."
+                        value={photoUrl}
+                        onValueChange={(val) => {
+                          setPhotoUrl(val);
+                          setValue("photoUrl", val);
+                        }}
+                        classNames={{
+                          inputWrapper: "bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
+                        }}
+                      />
+                    </div>
+
                     <div>
                       <label className="mb-4 block text-center text-lg font-semibold text-slate-900 dark:text-white">
                         Any additional thoughts? (optional)
@@ -348,7 +512,7 @@ export function LogEntryDialog({ children, onSuccess }: LogEntryDialogProps) {
                 disabled={isSubmitting || !selectedMood}
                 className="rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-12 py-6 text-base font-bold text-white shadow-[0_20px_50px_-12px_rgba(99,102,241,0.6)] transition hover:shadow-[0_25px_60px_-15px_rgba(99,102,241,0.7)] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {isSubmitting ? "Saving..." : "Save Entry"}
+                {isSubmitting ? "Saving..." : entryToEdit ? "Update Entry" : "Save Entry"}
               </Button>
             </div>
           </form>

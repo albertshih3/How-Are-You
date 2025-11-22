@@ -17,6 +17,10 @@ export const EntryValidator = z.object({
     .optional()
     .or(z.literal('')),
   tags: z.array(z.string()).optional(),
+  location: z.string().optional(),
+  weather: z.string().optional(),
+  socialContext: z.array(z.string()).optional(),
+  photoUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export type TEntryValidator = z.infer<typeof EntryValidator>;

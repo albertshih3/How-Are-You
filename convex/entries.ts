@@ -23,6 +23,11 @@ export const createEntry = mutation({
     // Legacy plaintext fields (kept for backward compatibility)
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    // New metadata fields
+    location: v.optional(v.string()),
+    weather: v.optional(v.string()),
+    socialContext: v.optional(v.array(v.string())),
+    photoUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -44,6 +49,11 @@ export const createEntry = mutation({
       // Fallback to plaintext fields for backward compatibility
       notes: args.notes,
       tags: args.tags ?? [],
+      // New metadata fields
+      location: args.location,
+      weather: args.weather,
+      socialContext: args.socialContext,
+      photoUrl: args.photoUrl,
     };
 
     return ctx.db.insert("entries", entry);
@@ -178,5 +188,54 @@ export const updateEntryEncryption = mutation({
       notes: undefined, // Clear plaintext
       tags: [], // Clear plaintext
     });
+  },
+});
+
+export const updateEntry = mutation({
+  args: {
+    entryId: v.id("entries"),
+    moodType: v.optional(v.string()),
+    moodIntensity: v.optional(v.number()),
+    encryptedNotes: v.optional(v.string()),
+    encryptedTags: v.optional(v.string()),
+    iv: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    location: v.optional(v.string()),
+    weather: v.optional(v.string()),
+    socialContext: v.optional(v.array(v.string())),
+    photoUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to updateEntry");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const entry = await ctx.db.get(args.entryId);
+    if (!entry) {
+      throw new Error("Entry not found");
+    }
+
+    if (entry.userId !== userId) {
+      throw new Error("Unauthorized to update this entry");
+    }
+
+    const updates: any = {};
+    if (args.moodType !== undefined) updates.moodType = args.moodType;
+    if (args.moodIntensity !== undefined) updates.moodIntensity = args.moodIntensity;
+    if (args.encryptedNotes !== undefined) updates.encryptedNotes = args.encryptedNotes;
+    if (args.encryptedTags !== undefined) updates.encryptedTags = args.encryptedTags;
+    if (args.iv !== undefined) updates.iv = args.iv;
+    if (args.notes !== undefined) updates.notes = args.notes;
+    if (args.tags !== undefined) updates.tags = args.tags;
+    if (args.location !== undefined) updates.location = args.location;
+    if (args.weather !== undefined) updates.weather = args.weather;
+    if (args.socialContext !== undefined) updates.socialContext = args.socialContext;
+    if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl;
+
+    await ctx.db.patch(args.entryId, updates);
   },
 });

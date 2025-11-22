@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardBody, Chip } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NotebookPen, Sparkles } from "lucide-react";
+import { NotebookPen, Sparkles, Pencil, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
@@ -14,34 +14,23 @@ import {
   hoverLift,
   getStaggerDelay
 } from "@/lib/animations";
-
-interface Entry {
-  _id: string;
-  _creationTime: number;
-  userId: string;
-  timestamp: number;
-  moodType: string;
-  moodIntensity: number;
-  notes?: string;
-  tags?: string[];
-  encryptedNotes?: string;
-  encryptedTags?: string;
-  iv?: string;
-}
-
-interface DecryptedEntry extends Entry {
-  decryptedNotes?: string;
-  decryptedTags?: string[];
-}
+import { LogEntryDialog } from "./LogEntryDialog";
+import { DeleteEntryDialog } from "./DeleteEntryDialog";
+import { DecryptedEntry } from "@/types/entry";
+import { Doc } from "@convex/_generated/dataModel";
 
 interface RecentEntriesListProps {
-  entries: Entry[];
+  entries: Doc<"entries">[];
 }
 
 export function RecentEntriesList({ entries }: RecentEntriesListProps) {
   const { decryptionKey, isUnlocked } = useEncryption();
   const [decryptedEntries, setDecryptedEntries] = useState<DecryptedEntry[]>([]);
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [entryToEdit, setEntryToEdit] = useState<DecryptedEntry | null>(null);
+  const [entryToDelete, setEntryToDelete] = useState<DecryptedEntry | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Decrypt entries when they change or when decryption key becomes available
   useEffect(() => {
@@ -77,8 +66,7 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                   decryptedTags: tags,
                 };
               } catch (error) {
-                console.error("Failed to decrypt entry:", error);
-                // Return entry with error indicator
+                // Return entry with error indicator (decryption failed)
                 return {
                   ...entry,
                   decryptedNotes: "[Unable to decrypt]",
@@ -98,7 +86,8 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
 
         setDecryptedEntries(decrypted);
       } catch (error) {
-        console.error("Error decrypting entries:", error);
+        // Silently fail - individual entry errors are already handled above
+        setDecryptedEntries([]);
       } finally {
         setIsDecrypting(false);
       }
@@ -106,6 +95,26 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
 
     decryptEntries();
   }, [entries, decryptionKey, isUnlocked]);
+
+  const handleEdit = (entry: DecryptedEntry) => {
+    setEntryToEdit(entry);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (entry: DecryptedEntry) => {
+    setEntryToDelete(entry);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    setEntryToEdit(null);
+    setEditDialogOpen(false);
+  };
+
+  const handleDeleteSuccess = () => {
+    setEntryToDelete(null);
+    setDeleteDialogOpen(false);
+  };
 
   if (entries.length === 0) {
     return (
@@ -131,14 +140,15 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
   }
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={scaleFadeVariants}
-      whileHover={hoverLift}
-    >
-      <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
-        <CardBody className="flex h-full flex-col gap-6 p-8 lg:p-10">
+    <>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={scaleFadeVariants}
+        whileHover={hoverLift}
+      >
+        <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
+          <CardBody className="flex h-full flex-col gap-7 p-9 lg:p-11 xl:p-12">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 dark:text-slate-500">
@@ -154,7 +164,7 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
             </div>
           </div>
 
-          <div className="flex-1 space-y-5">
+          <div className="flex-1 space-y-6">
           {isDecrypting ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-sm text-slate-500">Decrypting entries...</div>
@@ -178,16 +188,39 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                       duration: 0.4
                     }}
                     whileHover={{ y: -4, scale: 1.01 }}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] transition-shadow duration-300 hover:border-slate-300 hover:shadow-[0_35px_60px_-30px_rgba(37,99,235,0.45)] dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-slate-600"
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] transition-shadow duration-300 hover:border-slate-300 hover:shadow-[0_35px_60px_-30px_rgba(37,99,235,0.45)] dark:border-slate-700/70 dark:bg-slate-900/80 dark:hover:border-slate-600 xl:p-7"
                   >
                   <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-100/80 via-white/20 to-transparent opacity-0 transition duration-300 group-hover:opacity-100 dark:from-slate-800/60" />
-                  <div className="relative z-10 flex items-start gap-4">
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-3xl shadow-inner dark:bg-slate-800">
+
+                    {/* Edit and Delete Buttons */}
+                    <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleEdit(entry)}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
+                        aria-label="Edit entry"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleDelete(entry)}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-red-100 hover:text-red-600 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                        aria-label="Delete entry"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </motion.button>
+                    </div>
+
+                    <div className="relative z-10 flex items-start gap-5">
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-4xl shadow-inner dark:bg-slate-800">
                       {moodData.emoji}
                     </div>
                     <div className="flex-1 space-y-4">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-base font-semibold text-slate-900 dark:text-white">
+                        <span className="text-lg font-semibold text-slate-900 dark:text-white">
                           {moodData.label}
                         </span>
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -236,6 +269,24 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
         </div>
       </CardBody>
     </Card>
-    </motion.div>
+      </motion.div>
+
+      {/* Edit Entry Dialog */}
+      <LogEntryDialog
+        entryToEdit={entryToEdit}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={handleEditSuccess}
+        hideTrigger
+      />
+
+      {/* Delete Entry Dialog */}
+      <DeleteEntryDialog
+        entry={entryToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onSuccess={handleDeleteSuccess}
+      />
+    </>
   );
 }

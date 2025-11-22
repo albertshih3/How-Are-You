@@ -31,6 +31,11 @@ const entries = defineTable({
   // Legacy plaintext fields (DEPRECATED - kept for backward compatibility during migration)
   notes: v.optional(v.string()), // DEPRECATED - will be removed after migration
   tags: v.optional(v.array(v.string())), // DEPRECATED - will become v.optional() after migration
+  // New metadata fields (Unencrypted)
+  location: v.optional(v.string()),
+  weather: v.optional(v.string()),
+  socialContext: v.optional(v.array(v.string())),
+  photoUrl: v.optional(v.string()),
 })
   .index("by_userId", ["userId"])
   .index("by_userId_and_timestamp", ["userId", "timestamp"]);

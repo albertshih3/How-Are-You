@@ -46,7 +46,7 @@ export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
       whileHover={hoverLift}
     >
       <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
-        <CardBody className="flex h-full flex-col gap-6 p-8 lg:p-10">
+        <CardBody className="flex h-full flex-col gap-7 p-9 xl:gap-8 xl:p-12">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Your streak</h2>
@@ -77,8 +77,8 @@ export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
               </p>
             </motion.div>
           ) : (
-            <div className="flex h-full flex-col gap-6">
-              <div className="grid items-end gap-6 sm:grid-cols-2">
+            <div className="flex h-full flex-col gap-7">
+              <div className="grid items-end gap-7 sm:grid-cols-2">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

@@ -33,17 +33,7 @@ import {
   hoverLift,
   tapScale
 } from "@/lib/animations";
-
-interface Entry {
-  _id: string;
-  _creationTime: number;
-  userId: string;
-  timestamp: number;
-  moodType: string;
-  moodIntensity: number;
-  notes?: string;
-  tags?: string[];
-}
+import { Doc } from "@convex/_generated/dataModel";
 
 export function Dashboard() {
   const { user, isLoaded } = useUser();
@@ -57,7 +47,7 @@ export function Dashboard() {
   const { quickStats, heroMessage, lastCheckInMood } = useMemo(() => {
     const now = Date.now();
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
-    const entries = (recentEntries ?? []) as Entry[];
+    const entries = (recentEntries ?? []) as Doc<"entries">[];
     const weeklyEntries = entries.filter((entry) => entry.timestamp >= sevenDaysAgo);
     const averageIntensity =
       weeklyEntries.length > 0
@@ -167,21 +157,21 @@ export function Dashboard() {
       </div>
 
       <motion.div
-        className="mx-auto max-w-7xl px-6 pb-24 pt-12 sm:px-8 lg:px-12"
+        className="mx-auto w-full max-w-[115rem] px-6 pb-24 pt-12 sm:px-8 lg:px-12 2xl:px-16"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
         <motion.section
           variants={fadeUpVariants}
-          className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-10 py-12 text-white shadow-[0_25px_60px_-20px_rgba(79,70,229,0.55)] dark:border-white/10 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950 lg:px-12 lg:py-14"
+          className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-10 py-12 text-white shadow-[0_25px_60px_-20px_rgba(79,70,229,0.55)] dark:border-white/10 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-950 lg:px-12 lg:py-14 xl:px-14 xl:py-16 2xl:px-16 2xl:py-16"
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff33_0,transparent_45%)] opacity-80" />
           <div className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute -bottom-32 left-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl" />
 
           <div className="relative z-10 flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-xl space-y-6">
+            <div className="max-w-xl space-y-6 2xl:max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-white/70">
                 <Sparkles className="h-4 w-4" /> Daily pulse
               </span>
@@ -217,7 +207,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="grid w-full gap-6 sm:grid-cols-2">
+            <div className="grid w-full gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-8">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
@@ -255,7 +245,7 @@ export function Dashboard() {
 
         <motion.div
           variants={fadeUpVariants}
-          className="mt-16 grid grid-cols-1 gap-8 lg:gap-10 xl:grid-cols-3"
+          className="mt-16 grid grid-cols-1 gap-8 lg:gap-12 xl:[grid-template-columns:1.1fr_1.3fr_1.1fr] 2xl:[grid-template-columns:1.15fr_1.5fr_1.2fr] 2xl:gap-16"
         >
           <motion.div
             variants={fadeUpVariants}
@@ -266,7 +256,7 @@ export function Dashboard() {
               currentStreak={streakData?.currentStreak ?? 0}
               longestStreak={streakData?.longestStreak ?? 0}
             />
-            <InsightsCard entries={(recentEntries ?? []) as Entry[]} />
+            <InsightsCard entries={(recentEntries ?? []) as Doc<"entries">[]} />
           </motion.div>
 
           <motion.div
@@ -274,7 +264,7 @@ export function Dashboard() {
             transition={{ delay: getStaggerDelay(1) }}
             className="xl:col-span-1"
           >
-            <RecentEntriesList entries={(recentEntries ?? []) as Entry[]} />
+            <RecentEntriesList entries={(recentEntries ?? []) as Doc<"entries">[]} />
           </motion.div>
 
           <motion.div
