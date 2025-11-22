@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardBody, Chip } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NotebookPen, Sparkles, Pencil, Trash2 } from "lucide-react";
+import { NotebookPen, Sparkles, Pencil, Trash2, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
@@ -18,9 +18,54 @@ import { LogEntryDialog } from "./LogEntryDialog";
 import { DeleteEntryDialog } from "./DeleteEntryDialog";
 import { DecryptedEntry } from "@/types/entry";
 import { Doc } from "@convex/_generated/dataModel";
+import { useDecryptedImage } from "@/hooks/useDecryptedImage";
 
 interface RecentEntriesListProps {
   entries: Doc<"entries">[];
+}
+
+// Component to display decrypted image
+function DecryptedImage({ storageId, iv }: { storageId: string; iv: string }) {
+  const { imageUrl, isLoading, error } = useDecryptedImage(storageId, iv);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">Decrypting image...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+      </div>
+    );
+  }
+
+  if (!imageUrl) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      className="mt-3"
+    >
+      <img
+        src={imageUrl}
+        alt="Entry attachment"
+        className="max-w-full rounded-xl border border-slate-200 shadow-sm dark:border-slate-700"
+        style={{ maxHeight: "300px", objectFit: "cover" }}
+      />
+    </motion.div>
+  );
 }
 
 export function RecentEntriesList({ entries }: RecentEntriesListProps) {
@@ -248,6 +293,14 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                                   </Chip>
                                 ))}
                               </div>
+                            )}
+
+                            {/* Display encrypted image if present */}
+                            {entry.encryptedImageStorageId && entry.encryptedImageIv && (
+                              <DecryptedImage
+                                storageId={entry.encryptedImageStorageId}
+                                iv={entry.encryptedImageIv}
+                              />
                             )}
                           </div>
                         </div>

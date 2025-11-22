@@ -162,6 +162,8 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
         weather?: string;
         socialContext?: string[];
         photoUrl?: string;
+        encryptedImageStorageId?: string;
+        encryptedImageIv?: string;
       } = {
         moodType: data.moodType,
         moodIntensity: data.moodIntensity,
@@ -170,6 +172,72 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
         socialContext: data.socialContext,
         photoUrl: data.photoUrl,
       };
+
+      // Handle encrypted image upload
+      if (selectedFile) {
+        // Validate file size (10MB max)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (selectedFile.size > maxSize) {
+          toast.error("Image must be smaller than 10MB");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
+        if (!allowedTypes.includes(selectedFile.type)) {
+          toast.error("Please select an image file (JPEG, PNG, WebP, HEIC)");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check if encryption is unlocked
+        if (!isUnlocked || !decryptionKey) {
+          toast.error("Please unlock encryption to upload images");
+          setIsSubmitting(false);
+          return;
+        }
+
+        try {
+          setUploading(true);
+
+          // Read file as ArrayBuffer
+          const arrayBuffer = await selectedFile.arrayBuffer();
+
+          // Encrypt the file
+          const { encryptedData, iv } = await encryptBlob(arrayBuffer, decryptionKey);
+
+          // Get upload URL
+          const uploadUrl = await generateUploadUrl();
+
+          // Upload encrypted blob
+          const uploadResponse = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/octet-stream" },
+            body: encryptedData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload image");
+          }
+
+          const { storageId } = await uploadResponse.json();
+
+          // Add encrypted image data to entry
+          entryData.encryptedImageStorageId = storageId;
+          entryData.encryptedImageIv = iv;
+
+          toast.success("Image uploaded successfully");
+        } catch (uploadError) {
+          console.error("Image upload error:", uploadError);
+          toast.error("Failed to upload image. Please try again.");
+          setIsSubmitting(false);
+          setUploading(false);
+          return;
+        } finally {
+          setUploading(false);
+        }
+      }
 
       // Encrypt notes and tags if encryption is unlocked
       if (isUnlocked && decryptionKey) {
@@ -198,10 +266,14 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
           entryId: entryToEdit._id,
           ...entryData,
         });
+        toast.success("Entry updated successfully");
       } else {
         await createEntry(entryData);
+        toast.success("Entry saved successfully");
       }
 
+      // Clear selected file and close dialog
+      setSelectedFile(null);
       handleDialogChange(false);
 
       if (onSuccess) {
@@ -209,6 +281,7 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
       }
     } catch (error) {
       console.error("Error saving entry:", error);
+      toast.error("Failed to save entry. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -463,28 +536,54 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
                           <ImageIcon className="h-4 w-4" /> Photo (Encrypted)
                         </div>
                       </label>
-                      <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) setSelectedFile(file);
-                          }}
-                          classNames={{
-                            inputWrapper: "h-14 bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
-                            input: "pt-3 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100",
-                          }}
-                        />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) setSelectedFile(file);
+                            }}
+                            classNames={{
+                              inputWrapper: "h-14 bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
+                              input: "pt-3 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100",
+                            }}
+                          />
+                          {selectedFile && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setSelectedFile(null)}
+                              className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
                         {selectedFile && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setSelectedFile(null)}
-                            className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-xl border-2 border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900"
                           >
-                            Remove
-                          </Button>
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="Preview"
+                                className="h-24 w-24 rounded-lg object-cover shadow-sm"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                  {selectedFile.name}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
                         )}
                       </div>
                     </div>
