@@ -41,7 +41,7 @@ export function Dashboard() {
   const { hasSetup, isUnlocked, isLoading: encryptionLoading } = useEncryption();
 
   const streakData = useQuery(api.streaks.getStreakData);
-  const recentEntries = useQuery(api.entries.getRecentEntries, { limit: 8 });
+  const recentEntries = useQuery(api.entries.getRecentEntries, { limit: 5 });
   const articles = useQuery(api.articles.getRecommendedArticles, { limit: 3 });
 
   const { quickStats, heroMessage, lastCheckInMood } = useMemo(() => {
@@ -161,9 +161,9 @@ export function Dashboard() {
         >
           <motion.section
             variants={fadeUpVariants}
-            className="mb-16 flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between"
+            className="mb-16 grid gap-12 lg:grid-cols-12 lg:items-center"
           >
-            <div className="max-w-xl space-y-6 2xl:max-w-2xl">
+            <div className="space-y-6 lg:col-span-7 2xl:col-span-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
                 <Sparkles className="h-3.5 w-3.5 text-blue-500" />
                 <span>Daily pulse</span>
@@ -205,7 +205,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid w-full gap-4 sm:grid-cols-2 lg:col-span-5 2xl:col-span-4">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (

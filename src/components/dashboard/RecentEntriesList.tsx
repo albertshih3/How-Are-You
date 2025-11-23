@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardBody, Chip } from "@nextui-org/react";
+import Link from "next/link";
+import { Card, CardBody, Chip, Button } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NotebookPen, Sparkles, Pencil, Trash2, Loader2 } from "lucide-react";
+import { NotebookPen, Sparkles, Pencil, Trash2, Loader2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
@@ -76,6 +77,7 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
   const [entryToDelete, setEntryToDelete] = useState<DecryptedEntry | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
 
   // Decrypt entries when they change or when decryption key becomes available
   useEffect(() => {
@@ -161,6 +163,10 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
     setDeleteDialogOpen(false);
   };
 
+  const toggleExpand = (id: string) => {
+    setExpandedEntryId(expandedEntryId === id ? null : id);
+  };
+
   if (entries.length === 0) {
     return (
       <motion.div
@@ -196,20 +202,18 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
           <CardBody className="flex h-full flex-col gap-6 p-6 xl:p-8">
             <div className="flex items-center justify-between">
               <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent entries</h2>
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Journal feed
                 </p>
-                <h2 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
-                  Recent entries
-                </h2>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 <Sparkles className="h-3.5 w-3.5" />
-                {entries.length} total
+                <span className="font-bold">{entries.length}</span> latest
               </div>
             </div>
 
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-3">
               {isDecrypting ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-sm text-slate-500">Decrypting entries...</div>
@@ -221,6 +225,7 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                     const timeAgo = formatDistanceToNow(new Date(entry.timestamp), {
                       addSuffix: true,
                     });
+                    const isExpanded = expandedEntryId === entry._id;
 
                     return (
                       <motion.div
@@ -232,83 +237,129 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                           delay: getStaggerDelay(index, 0.08),
                           duration: 0.4
                         }}
-                        className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 p-5 transition-all hover:border-slate-200 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+                        className={`group relative overflow-hidden rounded-2xl border transition-all ${isExpanded
+                            ? "border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                            : "border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+                          }`}
                       >
-                        {/* Edit and Delete Buttons */}
-                        <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleEdit(entry)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm transition-colors hover:text-blue-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-blue-400"
-                            aria-label="Edit entry"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleDelete(entry)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm transition-colors hover:text-red-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-red-400"
-                            aria-label="Delete entry"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </motion.button>
-                        </div>
-
-                        <div className="relative z-10 flex items-start gap-4">
-                          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm dark:bg-slate-800">
+                        <div
+                          className="flex cursor-pointer items-center gap-4 p-4"
+                          onClick={() => toggleExpand(entry._id)}
+                        >
+                          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm dark:bg-slate-800">
                             {moodData.emoji}
                           </div>
-                          <div className="flex-1 space-y-3">
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                              <span className="text-base font-semibold text-slate-900 dark:text-white">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                                 {moodData.label}
                               </span>
-                              <span className="rounded-full bg-slate-200/50 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                                Intensity {entry.moodIntensity}/10
-                              </span>
-                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500">
                                 {timeAgo}
                               </span>
                             </div>
-
-                            {entry.decryptedNotes && (
-                              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                                {entry.decryptedNotes}
-                              </p>
-                            )}
-
-                            {entry.decryptedTags && entry.decryptedTags.length > 0 && (
-                              <div className="flex flex-wrap gap-2 pt-1">
-                                {entry.decryptedTags.map((tag, tagIndex) => (
-                                  <Chip
-                                    key={tag}
-                                    size="sm"
-                                    radius="full"
-                                    variant="flat"
-                                    className="h-6 bg-white px-2 text-[10px] font-medium text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-400"
-                                  >
-                                    #{tag}
-                                  </Chip>
-                                ))}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <div className="h-1.5 w-12 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-slate-400 dark:bg-slate-500"
+                                  style={{ width: `${(entry.moodIntensity / 10) * 100}%` }}
+                                />
                               </div>
-                            )}
-
-                            {/* Display encrypted image if present */}
-                            {entry.encryptedImageStorageId && entry.encryptedImageIv && (
-                              <DecryptedImage
-                                storageId={entry.encryptedImageStorageId}
-                                iv={entry.encryptedImageIv}
-                              />
-                            )}
+                              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                                {entry.moodIntensity}/10
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-slate-400 transition-transform duration-200 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </div>
                         </div>
+
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="border-t border-slate-100 bg-slate-50/30 px-4 pb-4 dark:border-slate-800 dark:bg-slate-900/30"
+                            >
+                              <div className="pt-4 space-y-3">
+                                {entry.decryptedNotes && (
+                                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                                    {entry.decryptedNotes}
+                                  </p>
+                                )}
+
+                                {entry.decryptedTags && entry.decryptedTags.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {entry.decryptedTags.map((tag) => (
+                                      <Chip
+                                        key={tag}
+                                        size="sm"
+                                        radius="full"
+                                        variant="flat"
+                                        className="h-6 bg-white px-2 text-[10px] font-medium text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-400"
+                                      >
+                                        #{tag}
+                                      </Chip>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Display encrypted image if present */}
+                                {entry.encryptedImageStorageId && entry.encryptedImageIv && (
+                                  <DecryptedImage
+                                    storageId={entry.encryptedImageStorageId}
+                                    iv={entry.encryptedImageIv}
+                                  />
+                                )}
+
+                                <div className="flex justify-end gap-2 pt-2">
+                                  <Button
+                                    size="sm"
+                                    variant="light"
+                                    isIconOnly
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(entry);
+                                    }}
+                                    className="text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="light"
+                                    isIconOnly
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(entry);
+                                    }}
+                                    className="text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </motion.div>
                     );
                   })}
                 </AnimatePresence>
               )}
+            </div>
+
+            <div className="mt-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <Link
+                href="/entries"
+                className="group flex items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                View all entries
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
           </CardBody>
         </Card>

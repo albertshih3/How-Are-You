@@ -66,7 +66,7 @@ export function InsightsCard({ entries }: InsightsCardProps) {
         variants={scaleFadeVariants}
         whileHover={hoverLift}
       >
-        <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
+        <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
           <CardBody className="flex h-full flex-col items-center justify-center gap-6 p-10 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               <LineChart className="h-7 w-7" />
@@ -110,118 +110,117 @@ export function InsightsCard({ entries }: InsightsCardProps) {
       variants={scaleFadeVariants}
       whileHover={hoverLift}
     >
-      <Card className="w-full rounded-[24px] border border-transparent bg-white/90 shadow-[0_18px_32px_-18px_rgba(15,23,42,0.25)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] dark:border-white/5 dark:bg-slate-900/75">
-        <CardBody className="flex h-full flex-col gap-7 p-9 lg:p-11 xl:gap-8 xl:p-12">
-          <div className="flex items-start justify-between">
+      <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+        <CardBody className="flex h-full flex-col gap-6 p-6 xl:p-8">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Weekly insights
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Weekly insights</h2>
+              <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Your trends
               </p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                Your emotional trends
-              </h2>
             </div>
-            <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              {weeklyEntries.length} logs
+            <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <span className="font-bold">{weeklyEntries.length}</span> logs
             </div>
           </div>
 
-          <div className="grid flex-1 gap-6 sm:grid-cols-2 xl:gap-8">
+          <div className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            {/* Consistency Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: getStaggerDelay(0, 0.15) }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="group flex flex-col justify-between rounded-3xl border border-slate-200 bg-blue-50/50 p-6 shadow-sm transition duration-300 hover:border-blue-200 hover:shadow-md dark:border-slate-700 dark:bg-blue-500/5"
+              className="group flex flex-col justify-between rounded-2xl bg-blue-50 p-5 transition duration-300 dark:bg-blue-500/10"
             >
-              <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-                <CalendarCheck2 className="h-5 w-5" />
-                <span className="text-xs font-bold uppercase tracking-wider">Consistency</span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600/70 dark:text-blue-400/70">Consistency</span>
+                <CalendarCheck2 className="h-4 w-4 text-blue-500" />
               </div>
-              <div className="mt-4">
-                <p className="text-5xl font-bold tabular-nums text-blue-700 dark:text-blue-300">
+              <div>
+                <p className="text-4xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
                   {animatedEntryCount}
                 </p>
-                <p className="mt-1 text-sm font-medium text-blue-600/80 dark:text-blue-300/80">Entries this week</p>
+                <p className="mt-1 text-xs font-medium text-blue-600/60 dark:text-blue-400/60">Entries this week</p>
               </div>
             </motion.div>
 
+            {/* Mood Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: getStaggerDelay(1, 0.15) }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="group flex flex-col justify-between rounded-3xl border border-slate-200 bg-purple-50/50 p-6 shadow-sm transition duration-300 hover:border-purple-200 hover:shadow-md dark:border-slate-700 dark:bg-purple-500/5"
+              className="group flex flex-col justify-between rounded-2xl bg-purple-50 p-5 transition duration-300 dark:bg-purple-500/10"
             >
-              <div className="flex items-center gap-3 text-purple-600 dark:text-purple-400">
-                <Sparkles className="h-5 w-5" />
-                <span className="text-xs font-bold uppercase tracking-wider">Mood</span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70">Mood</span>
+                <Sparkles className="h-4 w-4 text-purple-500" />
               </div>
-              <div className="mt-4">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl">{mostCommonMoodData!.emoji}</span>
-                  <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                    {mostCommonMoodData!.label}
-                  </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl drop-shadow-sm">{mostCommonMoodData?.emoji || "—"}</span>
+                  <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {mostCommonMoodData?.label || "No data"}
+                  </span>
                 </div>
-                <p className="mt-1 text-sm font-medium text-purple-600/80 dark:text-purple-300/80">
-                  Most common feeling
+                <p className="mt-1 text-xs font-medium text-purple-600/60 dark:text-purple-400/60">
+                  Most common
                 </p>
               </div>
             </motion.div>
 
+            {/* Intensity Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: getStaggerDelay(2, 0.15) }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm transition duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900/50"
+              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition duration-300 dark:border-slate-800 dark:bg-slate-800/50"
             >
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Intensity</span>
-                <Activity className="h-5 w-5" />
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Intensity</span>
+                <Activity className="h-4 w-4 text-slate-400" />
               </div>
-              <div className="mt-4">
-                <p className="text-4xl font-bold tabular-nums text-slate-900 dark:text-white">
-                  {animatedAvgIntensity}<span className="text-2xl text-slate-400">/10</span>
-                </p>
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800">
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">{animatedAvgIntensity}</span>
+                  <span className="text-xl font-medium text-slate-400">/10</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${intensityPercent}%` }}
                     transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
-                    className="h-full rounded-full bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 shadow-sm"
+                    className="h-full rounded-full bg-slate-900 dark:bg-white"
                   />
                 </div>
-                <p className="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  {intensityPercent >= 70
-                    ? "Energy running high—remember to rest."
-                    : intensityPercent <= 30
-                      ? "A gentle week—keep checking in."
-                      : "A balanced range of emotions."}
-                </p>
               </div>
             </motion.div>
 
+            {/* Mood Pulse Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: getStaggerDelay(3, 0.15) }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm transition duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900/50"
+              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50 p-5 transition duration-300 dark:border-slate-800 dark:bg-slate-800/50"
             >
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Mood pulse
-              </span>
-              <div className="mt-auto flex items-end justify-between gap-2 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Pulse
+                </span>
+                <LineChart className="h-4 w-4 text-slate-400" />
+              </div>
+              <div className="flex items-end justify-between gap-2 h-12">
                 {intensityBars.map((value, index) => {
-                  const barHeight = value > 0 ? (value / 10) * maxBarHeight : maxBarHeight * 0.15;
+                  const barHeight = value > 0 ? (value / 10) * 100 : 15;
                   return (
                     <motion.div
                       key={`intensity-${index}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{
-                        height: `${Math.max(barHeight, 8)}px`,
+                        height: `${barHeight}%`,
                         opacity: 1
                       }}
                       transition={{
@@ -229,19 +228,16 @@ export function InsightsCard({ entries }: InsightsCardProps) {
                         duration: 0.5,
                         ease: "easeOut"
                       }}
-                      className="relative flex-1 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800"
+                      className="relative flex-1 overflow-hidden rounded-sm bg-slate-200 dark:bg-slate-700"
                     >
                       <div
-                        className="absolute bottom-0 left-0 right-0 rounded-full bg-gradient-to-t from-indigo-500 via-sky-500 to-cyan-400"
+                        className="absolute bottom-0 left-0 right-0 bg-slate-900 dark:bg-white"
                         style={{ height: `${value === 0 ? 0 : 100}%` }}
                       />
                     </motion.div>
                   );
                 })}
               </div>
-              <p className="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Most recent entries ordered left to right.
-              </p>
             </motion.div>
           </div>
 
@@ -249,7 +245,7 @@ export function InsightsCard({ entries }: InsightsCardProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mt-auto rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-5 text-center text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
+            className="mt-auto text-center text-xs font-medium text-slate-500 dark:text-slate-400"
           >
             {getMessage()}
           </motion.div>
