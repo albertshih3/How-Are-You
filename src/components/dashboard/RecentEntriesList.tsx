@@ -10,7 +10,7 @@ import type { LocationData, WeatherData } from "@/lib/types/location";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
 import { useEncryption } from "@/contexts/EncryptionContext";
-import { decryptEntry, decryptLocation } from "@/lib/crypto/encryption";
+import { decryptEntry, decryptLocation, decryptPrompt } from "@/lib/crypto/encryption";
 import {
   scaleFadeVariants,
   hoverLift,
@@ -21,6 +21,7 @@ import { DeleteEntryDialog } from "./DeleteEntryDialog";
 import { DecryptedEntry } from "@/types/entry";
 import { Doc } from "@convex/_generated/dataModel";
 import { useDecryptedImage } from "@/hooks/useDecryptedImage";
+import { SafeHtmlRenderer } from "@/components/ui/SafeHtmlRenderer";
 
 interface RecentEntriesListProps {
   entries: Doc<"entries">[];
@@ -96,6 +97,7 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
             let decryptedNotes = entry.notes;
             let decryptedTags = entry.tags;
             let decryptedLocationData: LocationData | null = null;
+            let decryptedPromptData: string | null = null;
 
             // Decrypt notes and tags if encrypted
             if (
@@ -145,11 +147,30 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
               }
             }
 
+            // Decrypt prompt if encrypted
+            if (
+              isUnlocked &&
+              decryptionKey &&
+              entry.encryptedPrompt &&
+              entry.promptIv
+            ) {
+              try {
+                decryptedPromptData = await decryptPrompt(
+                  entry.encryptedPrompt,
+                  entry.promptIv,
+                  decryptionKey
+                );
+              } catch (error) {
+                console.error("Failed to decrypt prompt for entry:", entry._id, error);
+              }
+            }
+
             return {
               ...entry,
               decryptedNotes,
               decryptedTags,
               decryptedLocation: decryptedLocationData,
+              decryptedPrompt: decryptedPromptData,
             };
           })
         );
@@ -308,10 +329,21 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                               className="border-t border-slate-100 bg-slate-50/30 px-4 pb-4 dark:border-slate-800 dark:bg-slate-900/30"
                             >
                               <div className="pt-4 space-y-3">
+                                {/* AI Prompt Bar */}
+                                {entry.decryptedPrompt && (
+                                  <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 mb-3">
+                                    <Sparkles className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 flex-1">
+                                      {entry.decryptedPrompt}
+                                    </p>
+                                  </div>
+                                )}
+
                                 {entry.decryptedNotes && (
-                                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                                    {entry.decryptedNotes}
-                                  </p>
+                                  <SafeHtmlRenderer
+                                    html={entry.decryptedNotes}
+                                    className="text-sm leading-relaxed text-slate-600 dark:text-slate-400"
+                                  />
                                 )}
 
                                 {entry.decryptedTags && entry.decryptedTags.length > 0 && (

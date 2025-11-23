@@ -326,6 +326,37 @@ export async function decryptLocation(
 }
 
 /**
+ * Encrypt a prompt string
+ *
+ * @param prompt - AI prompt string to encrypt
+ * @param key - AES-GCM encryption key (DEK)
+ * @returns Object with encrypted prompt and IV
+ */
+export async function encryptPrompt(
+  prompt: string,
+  key: CryptoKey
+): Promise<{ encryptedPrompt: string; iv: string }> {
+  const { ciphertext, iv } = await encryptData(prompt, key);
+  return { encryptedPrompt: ciphertext, iv };
+}
+
+/**
+ * Decrypt a prompt string
+ *
+ * @param encryptedPrompt - Base64-encoded encrypted prompt
+ * @param ivB64 - Base64-encoded IV
+ * @param key - AES-GCM decryption key (DEK)
+ * @returns Decrypted prompt string
+ */
+export async function decryptPrompt(
+  encryptedPrompt: string,
+  ivB64: string,
+  key: CryptoKey
+): Promise<string> {
+  return await decryptData(encryptedPrompt, ivB64, key);
+}
+
+/**
  * Encrypt a mental health entry's sensitive fields (notes and tags).
  * Uses a single IV for both fields since they're part of the same logical entry.
  *

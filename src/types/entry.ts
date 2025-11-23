@@ -5,4 +5,5 @@ export interface DecryptedEntry extends Doc<"entries"> {
     decryptedNotes?: string;
     decryptedTags?: string[];
     decryptedLocation?: LocationData | null;
+    decryptedPrompt?: string | null;
 }

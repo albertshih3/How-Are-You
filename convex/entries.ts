@@ -32,6 +32,9 @@ export const createEntry = mutation({
     photoUrl: v.optional(v.string()),
     encryptedImageStorageId: v.optional(v.string()),
     encryptedImageIv: v.optional(v.string()),
+    // AI prompt fields
+    encryptedPrompt: v.optional(v.string()),
+    promptIv: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -62,6 +65,9 @@ export const createEntry = mutation({
       photoUrl: args.photoUrl,
       encryptedImageStorageId: args.encryptedImageStorageId,
       encryptedImageIv: args.encryptedImageIv,
+      // AI prompt fields
+      encryptedPrompt: args.encryptedPrompt,
+      promptIv: args.promptIv,
     };
 
     return ctx.db.insert("entries", entry);
@@ -217,6 +223,8 @@ export const updateEntry = mutation({
     photoUrl: v.optional(v.string()),
     encryptedImageStorageId: v.optional(v.string()),
     encryptedImageIv: v.optional(v.string()),
+    encryptedPrompt: v.optional(v.string()),
+    promptIv: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -251,6 +259,8 @@ export const updateEntry = mutation({
     if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl;
     if (args.encryptedImageStorageId !== undefined) updates.encryptedImageStorageId = args.encryptedImageStorageId;
     if (args.encryptedImageIv !== undefined) updates.encryptedImageIv = args.encryptedImageIv;
+    if (args.encryptedPrompt !== undefined) updates.encryptedPrompt = args.encryptedPrompt;
+    if (args.promptIv !== undefined) updates.promptIv = args.promptIv;
 
     await ctx.db.patch(args.entryId, updates);
   },

@@ -28,6 +28,8 @@ const entries = defineTable({
   encryptedNotes: v.optional(v.string()), // Base64 ciphertext
   encryptedTags: v.optional(v.string()), // Base64 encrypted JSON array
   iv: v.optional(v.string()), // Base64 IV for this entry
+  encryptedPrompt: v.optional(v.string()), // Base64 encrypted AI prompt text
+  promptIv: v.optional(v.string()), // Base64 IV for prompt encryption
   encryptedImageStorageId: v.optional(v.string()), // Storage ID for encrypted image blob
   encryptedImageIv: v.optional(v.string()), // Base64 IV for encrypted image
   // Legacy plaintext fields (DEPRECATED - kept for backward compatibility during migration)
