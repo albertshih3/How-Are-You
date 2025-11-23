@@ -7,7 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Slider, Checkbox, Textarea, Input } from "@nextui-org/react";
-import { MapPin, CloudSun, Users, Image as ImageIcon } from "lucide-react";
+import { MapPin, CloudSun, Users, Image as ImageIcon, Plus, Shield } from "lucide-react";
+import type { LocationData, WeatherData } from "@/lib/types/location";
+import { fetchWeather } from "@/lib/weather/api";
+import { LocationInput } from "@/components/dashboard/LocationInput";
+import { WeatherDisplay } from "@/components/dashboard/WeatherDisplay";
 
 import {
   Dialog,
@@ -22,7 +26,7 @@ import { EntryValidator, type TEntryValidator } from "@/lib/validators/entry-val
 import { MOOD_TYPES, COMMON_TAGS, type MoodType } from "@/lib/constants/moods";
 import { cn } from "@/lib/utils";
 import { useEncryption } from "@/contexts/EncryptionContext";
-import { encryptEntry, encryptBlob } from "@/lib/crypto/encryption";
+import { encryptEntry, encryptBlob, encryptLocation, decryptLocation } from "@/lib/crypto/encryption";
 import { toast } from "sonner";
 
 import { DecryptedEntry } from "@/types/entry";
@@ -46,12 +50,25 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
   const [intensity, setIntensity] = useState(entryToEdit?.moodIntensity || 5);
   const [notes, setNotes] = useState(entryToEdit?.decryptedNotes || entryToEdit?.notes || "");
   const [selectedTags, setSelectedTags] = useState<string[]>(entryToEdit?.decryptedTags || entryToEdit?.tags || []);
-  const [location, setLocation] = useState(entryToEdit?.location || "");
-  const [weather, setWeather] = useState(entryToEdit?.weather || "");
+  const [locationData, setLocationData] = useState<LocationData | null>(
+    entryToEdit?.decryptedLocation || null
+  );
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(
+    entryToEdit?.weather ? (() => {
+      try {
+        return JSON.parse(entryToEdit.weather) as WeatherData;
+      } catch {
+        return null;
+      }
+    })() : null
+  );
   const [socialContext, setSocialContext] = useState<string[]>(entryToEdit?.socialContext || []);
   const [photoUrl, setPhotoUrl] = useState(entryToEdit?.photoUrl || "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [fetchingWeather, setFetchingWeather] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [showWeatherInput, setShowWeatherInput] = useState(false);
 
   const generateUploadUrl = useMutation(api.entries.generateUploadUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,14 +98,51 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
 
   // Reset form when entryToEdit changes or dialog opens
   useEffect(() => {
-    if (open) {
-      if (entryToEdit) {
+    const loadEntryData = async () => {
+      if (open && entryToEdit) {
         setSelectedMood(entryToEdit.moodType as MoodType);
         setIntensity(entryToEdit.moodIntensity);
         setNotes(entryToEdit.decryptedNotes || entryToEdit.notes || "");
         setSelectedTags(entryToEdit.decryptedTags || entryToEdit.tags || []);
-        setLocation(entryToEdit.location || "");
-        setWeather(entryToEdit.weather || "");
+
+        // Decrypt encrypted location if available
+        if (entryToEdit.encryptedLocation && entryToEdit.locationIv && isUnlocked && decryptionKey) {
+          try {
+            const decryptedLocationData = await decryptLocation(
+              entryToEdit.encryptedLocation,
+              entryToEdit.locationIv,
+              decryptionKey
+            );
+            setLocationData(decryptedLocationData);
+            setShowLocationInput(true); // Show input since data exists
+          } catch (error) {
+            console.error("Failed to decrypt location:", error);
+            // Fall through to plaintext fallback
+          }
+        } else if (entryToEdit.location) {
+          // Fallback to plaintext location
+          try {
+            const parsedLocation = JSON.parse(entryToEdit.location) as LocationData;
+            setLocationData(parsedLocation);
+            setShowLocationInput(true); // Show input since data exists
+          } catch {
+            setLocationData(null);
+          }
+        }
+
+        // Parse weather data
+        const parsedWeather = entryToEdit.weather ? (() => {
+          try {
+            return JSON.parse(entryToEdit.weather) as WeatherData;
+          } catch {
+            return null;
+          }
+        })() : null;
+        setWeatherData(parsedWeather);
+        if (parsedWeather) {
+          setShowWeatherInput(true); // Show input since data exists
+        }
+
         setSocialContext(entryToEdit.socialContext || []);
         setPhotoUrl(entryToEdit.photoUrl || "");
 
@@ -100,12 +154,34 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
         setValue("weather", entryToEdit.weather || "");
         setValue("socialContext", entryToEdit.socialContext || []);
         setValue("photoUrl", entryToEdit.photoUrl || "");
-      } else {
-        // Reset to defaults if not editing
-        // Only reset if we just opened the dialog and weren't already editing
       }
-    }
-  }, [open, entryToEdit, setValue]);
+    };
+
+    loadEntryData();
+  }, [open, entryToEdit, setValue, isUnlocked, decryptionKey]);
+
+  // Automatically fetch weather when location changes
+  useEffect(() => {
+    const autoFetchWeather = async () => {
+      if (!locationData) return;
+      if (fetchingWeather) return; // Prevent concurrent fetches
+
+      setFetchingWeather(true);
+      try {
+        const weather = await fetchWeather(locationData.lat, locationData.lon);
+        setWeatherData(weather);
+        setShowWeatherInput(true); // Auto-show weather input when weather is fetched
+      } catch (error) {
+        console.error("Failed to fetch weather:", error);
+        // Don't show error toast, just fail silently - user can enter manually
+      } finally {
+        setFetchingWeather(false);
+      }
+    };
+
+    autoFetchWeather();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationData]); // Intentionally omit fetchingWeather to prevent infinite loops
 
   const moodDetails = selectedMood ? MOOD_TYPES[selectedMood] : null;
 
@@ -117,10 +193,11 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
       setIntensity(5);
       setNotes("");
       setSelectedTags([]);
-      setLocation("");
-      setWeather("");
+      setLocationData(null);
+      setWeatherData(null);
       setSocialContext([]);
       setPhotoUrl("");
+      setSelectedFile(null);
       reset();
       setValue("moodIntensity", 5);
       setValue("tags", []);
@@ -159,6 +236,8 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
         notes?: string;
         tags?: string[];
         location?: string;
+        encryptedLocation?: string;
+        locationIv?: string;
         weather?: string;
         socialContext?: string[];
         photoUrl?: string;
@@ -167,8 +246,7 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
       } = {
         moodType: data.moodType,
         moodIntensity: data.moodIntensity,
-        location: data.location,
-        weather: data.weather,
+        weather: weatherData ? JSON.stringify(weatherData) : undefined,
         socialContext: data.socialContext,
         photoUrl: data.photoUrl,
       };
@@ -236,6 +314,18 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
           return;
         } finally {
           setUploading(false);
+        }
+      }
+
+      // Encrypt location if encryption is unlocked
+      if (locationData) {
+        if (isUnlocked && decryptionKey) {
+          const { encryptedLocation, iv } = await encryptLocation(locationData, decryptionKey);
+          entryData.encryptedLocation = encryptedLocation;
+          entryData.locationIv = iv;
+        } else {
+          // Fallback to plaintext for backward compatibility
+          entryData.location = JSON.stringify(locationData);
         }
       }
 
@@ -315,7 +405,7 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
             <DialogTitle className="text-3xl font-bold text-slate-900 dark:text-white">
               {entryToEdit ? "Edit entry" : "How are you feeling?"}
             </DialogTitle>
-            <DialogDescription className="text-base text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
+            <DialogDescription className="text-base text-slate-600 dark:text-slate-400 text-left pt-1">
               Take a moment to check in with yourself
             </DialogDescription>
           </DialogHeader>
@@ -457,46 +547,81 @@ export function LogEntryDialog({ children, onSuccess, entryToEdit, open: control
                       </div>
                     </div>
 
-                    {/* New Metadata Fields */}
-                    <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-6">
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4" /> Location
-                          </div>
-                        </label>
-                        <Input
-                          placeholder="Where are you?"
-                          value={location}
-                          onValueChange={(val) => {
-                            setLocation(val);
-                            setValue("location", val);
-                          }}
-                          classNames={{
-                            inputWrapper: "h-14 bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
-                            input: "text-base",
-                          }}
-                        />
+                        {!showLocationInput && locationData === null ? (
+                          <button
+                            type="button"
+                            onClick={() => setShowLocationInput(true)}
+                            className="w-full rounded-xl border-2 border-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm font-medium text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Add location
+                            </div>
+                          </button>
+                        ) : (
+                          <>
+                            <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4" /> Location (optional)
+                              </div>
+                            </label>
+                            <LocationInput
+                              value={locationData}
+                              onChange={(location) => {
+                                setLocationData(location);
+                                setValue("location", location ? JSON.stringify(location) : "");
+                              }}
+                              onError={(error) => toast.error(error)}
+                              onCancel={() => setShowLocationInput(false)}
+                            />
+                          </>
+                        )}
                       </div>
+
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <CloudSun className="h-4 w-4" /> Weather
-                          </div>
-                        </label>
-                        <Input
-                          placeholder="Sunny, Rainy, etc."
-                          value={weather}
-                          onValueChange={(val) => {
-                            setWeather(val);
-                            setValue("weather", val);
-                          }}
-                          classNames={{
-                            inputWrapper: "h-14 bg-white/60 dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-700 rounded-xl hover:border-slate-300 dark:hover:border-slate-600 focus-within:!border-indigo-400",
-                            input: "text-base",
-                          }}
-                        />
+                        {!showWeatherInput && weatherData === null ? (
+                          <button
+                            type="button"
+                            onClick={() => setShowWeatherInput(true)}
+                            className="w-full rounded-xl border-2 border-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm font-medium text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Add weather
+                            </div>
+                          </button>
+                        ) : (
+                          <>
+                            <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <div className="flex items-center gap-2">
+                                <CloudSun className="h-4 w-4" /> Weather (optional) {fetchingWeather && "(Fetching...)"}
+                              </div>
+                            </label>
+                            <WeatherDisplay
+                              value={weatherData}
+                              onChange={(weather) => {
+                                setWeatherData(weather);
+                                setValue("weather", weather ? JSON.stringify(weather) : "");
+                              }}
+                              editable={true}
+                              onCancel={() => setShowWeatherInput(false)}
+                            />
+                          </>
+                        )}
                       </div>
+
+                      {(showLocationInput || showWeatherInput || locationData || weatherData) && (
+                        <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-700 dark:bg-blue-950/30 dark:text-blue-300">
+                          <div className="flex items-start gap-2">
+                            <Shield className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                            <p>
+                              Location and weather data are encrypted on your device before being stored.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>

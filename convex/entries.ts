@@ -25,6 +25,8 @@ export const createEntry = mutation({
     tags: v.optional(v.array(v.string())),
     // New metadata fields
     location: v.optional(v.string()),
+    encryptedLocation: v.optional(v.string()),
+    locationIv: v.optional(v.string()),
     weather: v.optional(v.string()),
     socialContext: v.optional(v.array(v.string())),
     photoUrl: v.optional(v.string()),
@@ -53,6 +55,8 @@ export const createEntry = mutation({
       tags: args.tags ?? [],
       // New metadata fields
       location: args.location,
+      encryptedLocation: args.encryptedLocation,
+      locationIv: args.locationIv,
       weather: args.weather,
       socialContext: args.socialContext,
       photoUrl: args.photoUrl,
@@ -206,6 +210,8 @@ export const updateEntry = mutation({
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     location: v.optional(v.string()),
+    encryptedLocation: v.optional(v.string()),
+    locationIv: v.optional(v.string()),
     weather: v.optional(v.string()),
     socialContext: v.optional(v.array(v.string())),
     photoUrl: v.optional(v.string()),
@@ -238,6 +244,8 @@ export const updateEntry = mutation({
     if (args.notes !== undefined) updates.notes = args.notes;
     if (args.tags !== undefined) updates.tags = args.tags;
     if (args.location !== undefined) updates.location = args.location;
+    if (args.encryptedLocation !== undefined) updates.encryptedLocation = args.encryptedLocation;
+    if (args.locationIv !== undefined) updates.locationIv = args.locationIv;
     if (args.weather !== undefined) updates.weather = args.weather;
     if (args.socialContext !== undefined) updates.socialContext = args.socialContext;
     if (args.photoUrl !== undefined) updates.photoUrl = args.photoUrl;

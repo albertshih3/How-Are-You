@@ -33,9 +33,11 @@ const entries = defineTable({
   // Legacy plaintext fields (DEPRECATED - kept for backward compatibility during migration)
   notes: v.optional(v.string()), // DEPRECATED - will be removed after migration
   tags: v.optional(v.array(v.string())), // DEPRECATED - will become v.optional() after migration
-  // New metadata fields (Unencrypted)
-  location: v.optional(v.string()),
-  weather: v.optional(v.string()),
+  // New metadata fields
+  location: v.optional(v.string()), // DEPRECATED - Plaintext location (kept for backward compatibility)
+  encryptedLocation: v.optional(v.string()), // Base64 encrypted location JSON
+  locationIv: v.optional(v.string()), // IV for location encryption
+  weather: v.optional(v.string()), // Unencrypted weather data
   socialContext: v.optional(v.array(v.string())),
   photoUrl: v.optional(v.string()),
 })

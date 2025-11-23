@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardBody, Chip, Button } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NotebookPen, Sparkles, Pencil, Trash2, Loader2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { NotebookPen, Sparkles, Pencil, Trash2, Loader2, ChevronDown, ChevronUp, ArrowRight, MapPin, Cloud, CloudRain, CloudSnow, Sun, CloudDrizzle, CloudFog, CloudLightning } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { LocationData, WeatherData } from "@/lib/types/location";
 
 import { MOOD_TYPES, type MoodType } from "@/lib/constants/moods";
 import { useEncryption } from "@/contexts/EncryptionContext";
-import { decryptEntry } from "@/lib/crypto/encryption";
+import { decryptEntry, decryptLocation } from "@/lib/crypto/encryption";
 import {
   scaleFadeVariants,
   hoverLift,
@@ -92,7 +93,11 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
       try {
         const decrypted = await Promise.all(
           entries.map(async (entry) => {
-            // If entry has encrypted fields and we have a decryption key, decrypt them
+            let decryptedNotes = entry.notes;
+            let decryptedTags = entry.tags;
+            let decryptedLocationData: LocationData | null = null;
+
+            // Decrypt notes and tags if encrypted
             if (
               isUnlocked &&
               decryptionKey &&
@@ -106,27 +111,45 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                   entry.iv,
                   decryptionKey
                 );
-
-                return {
-                  ...entry,
-                  decryptedNotes: notes,
-                  decryptedTags: tags,
-                };
+                decryptedNotes = notes;
+                decryptedTags = tags;
               } catch (error) {
-                // Return entry with error indicator (decryption failed)
-                return {
-                  ...entry,
-                  decryptedNotes: "[Unable to decrypt]",
-                  decryptedTags: [],
-                };
+                decryptedNotes = "[Unable to decrypt]";
+                decryptedTags = [];
               }
             }
 
-            // Otherwise, use plaintext fields (backward compatibility)
+            // Decrypt location if encrypted
+            if (
+              isUnlocked &&
+              decryptionKey &&
+              entry.encryptedLocation &&
+              entry.locationIv
+            ) {
+              try {
+                decryptedLocationData = await decryptLocation(
+                  entry.encryptedLocation,
+                  entry.locationIv,
+                  decryptionKey
+                );
+              } catch (error) {
+                console.error("Failed to decrypt location:", error);
+                // Fall through to plaintext fallback
+              }
+            } else if (entry.location) {
+              // Fallback to plaintext location
+              try {
+                decryptedLocationData = JSON.parse(entry.location) as LocationData;
+              } catch {
+                decryptedLocationData = null;
+              }
+            }
+
             return {
               ...entry,
-              decryptedNotes: entry.notes,
-              decryptedTags: entry.tags,
+              decryptedNotes,
+              decryptedTags,
+              decryptedLocation: decryptedLocationData,
             };
           })
         );
@@ -304,6 +327,48 @@ export function RecentEntriesList({ entries }: RecentEntriesListProps) {
                                         #{tag}
                                       </Chip>
                                     ))}
+                                  </div>
+                                )}
+
+                                {/* Display location and weather */}
+                                {(entry.location || entry.weather) && (
+                                  <div className="flex flex-wrap gap-3 text-xs">
+                                    {entry.location && (() => {
+                                      try {
+                                        const locationData: LocationData = JSON.parse(entry.location);
+                                        return (
+                                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                                            <MapPin className="h-3.5 w-3.5 text-blue-500" />
+                                            <span>{locationData.name}</span>
+                                          </div>
+                                        );
+                                      } catch {
+                                        return null;
+                                      }
+                                    })()}
+                                    {entry.weather && (() => {
+                                      try {
+                                        const weatherData: WeatherData = JSON.parse(entry.weather);
+                                        const WeatherIcon = {
+                                          '01d': Sun,
+                                          '02d': Cloud,
+                                          '03d': Cloud,
+                                          '09d': CloudDrizzle,
+                                          '10d': CloudRain,
+                                          '11d': CloudLightning,
+                                          '13d': CloudSnow,
+                                          '50d': CloudFog,
+                                        }[weatherData.icon] || Cloud;
+                                        return (
+                                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                                            <WeatherIcon className="h-3.5 w-3.5 text-blue-500" />
+                                            <span>{weatherData.condition}, {weatherData.temp}°{weatherData.unit}</span>
+                                          </div>
+                                        );
+                                      } catch {
+                                        return null;
+                                      }
+                                    })()}
                                   </div>
                                 )}
 

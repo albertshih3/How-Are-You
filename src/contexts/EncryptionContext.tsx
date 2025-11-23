@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/nextjs";
 import { api } from "@convex/_generated/api";
 import {
   generateEncryptionKey,
@@ -13,6 +14,71 @@ import {
   base64ToArrayBuffer,
   getPbkdf2Iterations,
 } from "@/lib/crypto/encryption";
+
+// SessionStorage key for persisting encryption key
+const STORAGE_KEY = "howareyou_encryption_key";
+
+/**
+ * Save CryptoKey to sessionStorage as base64-encoded raw key material.
+ * This allows the key to persist across page navigation within the same session.
+ */
+async function saveKeyToSession(key: CryptoKey): Promise<void> {
+  try {
+    // Export key as raw ArrayBuffer
+    const rawKey = await window.crypto.subtle.exportKey("raw", key);
+    // Convert to base64 for storage
+    const base64Key = arrayBufferToBase64(rawKey);
+    // Store in sessionStorage (cleared on tab close)
+    sessionStorage.setItem(STORAGE_KEY, base64Key);
+  } catch (error) {
+    console.error("Failed to save key to session:", error);
+    // Non-fatal: If storage fails, user just needs to unlock again on next navigation
+  }
+}
+
+/**
+ * Load CryptoKey from sessionStorage and import back to CryptoKey format.
+ * Returns null if no key exists or if import fails.
+ */
+async function loadKeyFromSession(): Promise<CryptoKey | null> {
+  try {
+    const base64Key = sessionStorage.getItem(STORAGE_KEY);
+    if (!base64Key) {
+      return null;
+    }
+
+    // Convert base64 back to ArrayBuffer
+    const rawKey = base64ToArrayBuffer(base64Key);
+
+    // Import as AES-GCM key
+    const key = await window.crypto.subtle.importKey(
+      "raw",
+      rawKey,
+      { name: "AES-GCM", length: 256 },
+      true, // extractable
+      ["encrypt", "decrypt"]
+    );
+
+    return key;
+  } catch (error) {
+    console.error("Failed to load key from session:", error);
+    // Clear corrupted data
+    clearKeyFromSession();
+    return null;
+  }
+}
+
+/**
+ * Clear encryption key from sessionStorage.
+ * Called on lock() and sign-out.
+ */
+function clearKeyFromSession(): void {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error("Failed to clear key from session:", error);
+  }
+}
 
 interface EncryptionContextType {
   decryptionKey: CryptoKey | null;
@@ -30,14 +96,52 @@ const EncryptionContext = createContext<EncryptionContextType | undefined>(undef
 export function EncryptionProvider({ children }: { children: React.ReactNode }) {
   const [decryptionKey, setDecryptionKey] = useState<CryptoKey | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Clerk user hook to detect sign-out
+  const { isSignedIn, isLoaded: userLoaded } = useUser();
 
   // Convex hooks
   const hasSetup = useQuery(api.users.hasEncryptionSetup) ?? false;
   const encryptionKeyData = useQuery(api.users.getEncryptionKey);
   const storeEncryptionKeyMutation = useMutation(api.users.storeEncryptionKey);
 
-  const isLoading = hasSetup === undefined || encryptionKeyData === undefined;
+  const isLoading = hasSetup === undefined || encryptionKeyData === undefined || isInitializing;
   const isUnlocked = decryptionKey !== null;
+
+  /**
+   * Load encryption key from sessionStorage on mount.
+   * This allows key to persist across navigation within the same session.
+   */
+  useEffect(() => {
+    async function initializeKey() {
+      try {
+        const storedKey = await loadKeyFromSession();
+        if (storedKey) {
+          setDecryptionKey(storedKey);
+        }
+      } catch (error) {
+        console.error("Failed to initialize encryption key:", error);
+      } finally {
+        setIsInitializing(false);
+      }
+    }
+
+    initializeKey();
+  }, []);
+
+  /**
+   * Clear encryption key when user signs out.
+   * This ensures the key doesn't persist after logout.
+   */
+  useEffect(() => {
+    if (userLoaded && !isSignedIn) {
+      // User has signed out
+      setDecryptionKey(null);
+      clearKeyFromSession();
+      setError(null);
+    }
+  }, [isSignedIn, userLoaded]);
 
   /**
    * Setup encryption for the first time.
@@ -71,6 +175,9 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
 
         // Cache DEK in memory
         setDecryptionKey(dek);
+
+        // Persist DEK to sessionStorage for this session
+        await saveKeyToSession(dek);
       } catch (err) {
         console.error("Failed to setup encryption:", err);
         setError("Failed to setup encryption. Please try again.");
@@ -114,6 +221,9 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
 
         // Cache DEK in memory
         setDecryptionKey(dek);
+
+        // Persist DEK to sessionStorage for this session
+        await saveKeyToSession(dek);
       } catch (err) {
         console.error("Failed to unlock encryption:", err);
         setError("Incorrect passphrase. Please try again.");
@@ -124,11 +234,12 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
   );
 
   /**
-   * Lock encryption by clearing the decryption key from memory.
+   * Lock encryption by clearing the decryption key from memory and sessionStorage.
    */
   const lock = useCallback(() => {
     setDecryptionKey(null);
     setError(null);
+    clearKeyFromSession();
   }, []);
 
   const value: EncryptionContextType = {

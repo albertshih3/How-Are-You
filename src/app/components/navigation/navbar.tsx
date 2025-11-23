@@ -4,12 +4,10 @@ import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import MaxWidthWrapper from "@/components/maxWidthWrapper";
@@ -38,224 +36,183 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Mood Tracker",
-    href: "/mood-tracker",
-    description:
-      "Track your mood and emotions with our easy to use mood tracker.",
-  },
-  {
-    title: "Journal",
-    href: "/journal",
-    description:
-      "Write down your thoughts and feelings in your personal journal.",
-  },
-  {
-    title: "View Community Posts",
-    href: "/community",
-    description:
-      "View and engage with posts from other users in the community.",
-  },
-  {
-    title: "Create a Post",
-    href: "/community/create",
-    description:
-      "Create a post to share your thoughts and feelings with the community.",
-  },
+const NAV_LINKS = [
+  { title: "Dashboard", href: "/" },
+  { title: "Journal", href: "/entries" },
+  { title: "Insights", href: "/insights" },
+  { title: "Resources", href: "/resources" },
+  { title: "Community", href: "/community" },
 ];
 
 const Navbar = () => {
   return (
-    <header>
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <MaxWidthWrapper>
-        {/* !Desktop Navigation */}
-        <div className="border-gray-3000 hidden h-16 items-center border-b md:flex">
-          <div className="sticky inset-x-0 top-0 z-50 h-16">
-            <NavigationMenu>
-              <div className="ml-4 flex pr-3 pt-3 lg:ml-0">
-                <Link href="/">
-                  <Image
-                    className="p-1"
-                    src={Logo}
-                    alt="How Are You Today?"
-                    width={30}
-                    height={30}
-                  />
-                </Link>
-              </div>
-              <NavigationMenuList className="hidden pt-3 md:flex">
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                      <li className="row-span-3">
-                        <NavigationMenuLink asChild>
-                          <a
-                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                            href="/"
-                          >
-                            <Icons.logo className="h-6 w-6" />
-                            <div className="mb-2 mt-4 text-lg font-medium">
-                              How Are You?
-                            </div>
-                            <p className="text-sm leading-tight text-muted-foreground">
-                              A simple mental health application to help you
-                              track your mood and emotions. Made for college
-                              students by college students.
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <ListItem href="/sign-up" title="Create an Account">
-                        Create an account to access all of the apps features!
-                      </ListItem>
-                      <ListItem href="/features" title="Features">
-                        Get an in depth look at all of the features we offer.
-                      </ListItem>
-                      <ListItem href="/privacy" title="Privacy Policy">
-                        Learn more about our privacy policy, and how we manage
-                        data.
-                      </ListItem>
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo & Desktop Navigation */}
+          <div className="flex items-center gap-6 md:gap-10">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image
+                src={Logo}
+                alt="How Are You Today?"
+                width={30}
+                height={30}
+                className="p-1"
+              />
+              <span className="hidden font-bold sm:inline-block">
+                How Are You?
+              </span>
+            </Link>
 
-                <SignedIn>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Quick Access</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                        {components.map((component) => (
-                          <ListItem
-                            key={component.title}
-                            title={component.title}
-                            href={component.href}
-                          >
-                            {component.description}
+            {/* Desktop Nav */}
+            <div className="hidden md:flex">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <SignedOut>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                          <li className="row-span-3">
+                            <NavigationMenuLink asChild>
+                              <a
+                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                                href="/"
+                              >
+                                <Icons.logo className="h-6 w-6" />
+                                <div className="mb-2 mt-4 text-lg font-medium">
+                                  How Are You?
+                                </div>
+                                <p className="text-sm leading-tight text-muted-foreground">
+                                  A simple mental health application to help you
+                                  track your mood and emotions.
+                                </p>
+                              </a>
+                            </NavigationMenuLink>
+                          </li>
+                          <ListItem href="/sign-up" title="Create an Account">
+                            Create an account to access all features!
                           </ListItem>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </SignedIn>
+                          <ListItem href="/about" title="About Us">
+                            Learn more about our mission and team.
+                          </ListItem>
+                          <ListItem href="/privacy" title="Privacy Policy">
+                            How we handle your data.
+                          </ListItem>
+                        </ul>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <Link href="/about" legacyBehavior passHref>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                          About
+                        </NavigationMenuLink>
+                      </Link>
+                    </NavigationMenuItem>
+                  </SignedOut>
 
-                <NavigationMenuItem>
-                  <Link href="/about" legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      About Us
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+                  <SignedIn>
+                    {NAV_LINKS.map((link) => (
+                      <NavigationMenuItem key={link.title}>
+                        <Link href={link.href} legacyBehavior passHref>
+                          <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                            {link.title}
+                          </NavigationMenuLink>
+                        </Link>
+                      </NavigationMenuItem>
+                    ))}
+                  </SignedIn>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
           </div>
-          <div className="ml-auto flex items-center pb-3 pt-3">
-            <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:space-x-3">
+
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex md:items-center md:gap-2">
               <SignedIn>
-                <Link
-                  href="/changelog"
-                  className={buttonVariants({ variant: "ghost" })}
-                >
-                  Changelog
-                </Link>
-                <Link
-                  href="/account"
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  My Account
-                </Link>
                 <UserButton afterSignOutUrl="/" />
-                <span aria-hidden="true" className="h-6 w-px bg-gray-200"></span>
                 <ModeToggle />
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button variant="outline">Sign In</Button>
+                  <Button variant="ghost" size="sm">Sign In</Button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                  <Button>Create Account</Button>
+                  <Button size="sm">Get Started</Button>
                 </SignUpButton>
-                <span aria-hidden="true" className="h-6 w-px bg-gray-200"></span>
                 <ModeToggle />
               </SignedOut>
             </div>
-          </div>
-        </div>
 
-        {/* !Mobile Navigation */}
-        <div className="md:hidden">
-          <div className="sticky inset-x-0 top-0 z-50 h-16">
-            <Drawer>
-              <DrawerTrigger className="pt-3">
-                <Menu />
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Main Menu</DrawerTitle>
-                </DrawerHeader>
-                <div className="flex flex-col items-center space-y-2">
-                  <Link
-                    className={buttonVariants({ variant: "ghost" })}
-                    href="/"
-                  >
-                    Home
-                  </Link>
-
-                  <div className="flex flex-col items-center space-y-2 border-t pb-3 pt-3">
-                    <Link
-                      href="/about"
-                      className={buttonVariants({ variant: "ghost" })}
-                    >
-                      About Us
-                    </Link>
-
-                    <SignedIn>
-                      <Link
-                        href="/qamobile"
-                        className={buttonVariants({ variant: "ghost" })}
-                      >
-                        Quick Access
-                      </Link>
-                    </SignedIn>
-                  </div>
-
-                  <div className="flex flex-col items-center space-y-2 border-b border-t pb-3 pt-3">
-                    <SignedIn>
-                      <Link
-                        href="/changelog"
-                        className={buttonVariants({ variant: "ghost" })}
-                      >
-                        Changelog
-                      </Link>
-                      <Link
-                        href="/account"
-                        className={buttonVariants({ variant: "ghost" })}
-                      >
-                        My Account
-                      </Link>
-                      <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "h-9 w-9" } }} />
-                    </SignedIn>
+            {/* Mobile Menu Trigger */}
+            <div className="md:hidden">
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle Menu</span>
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <DrawerTitle>Menu</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="flex flex-col space-y-4 px-4 py-6">
                     <SignedOut>
-                      <SignInButton mode="modal">
-                        <Button variant="ghost">Sign In</Button>
-                      </SignInButton>
-                      <SignUpButton mode="modal">
-                        <Button variant="ghost">Create Account</Button>
-                      </SignUpButton>
+                      <Link
+                        href="/"
+                        className={cn(buttonVariants({ variant: "ghost" }), "justify-start")}
+                      >
+                        Home
+                      </Link>
+                      <Link
+                        href="/about"
+                        className={cn(buttonVariants({ variant: "ghost" }), "justify-start")}
+                      >
+                        About Us
+                      </Link>
+                      <div className="flex flex-col gap-2 pt-4">
+                        <SignInButton mode="modal">
+                          <Button variant="outline" className="w-full">Sign In</Button>
+                        </SignInButton>
+                        <SignUpButton mode="modal">
+                          <Button className="w-full">Create Account</Button>
+                        </SignUpButton>
+                      </div>
                     </SignedOut>
+
+                    <SignedIn>
+                      {NAV_LINKS.map((link) => (
+                        <Link
+                          key={link.title}
+                          href={link.href}
+                          className={cn(buttonVariants({ variant: "ghost" }), "justify-start")}
+                        >
+                          {link.title}
+                        </Link>
+                      ))}
+                      <div className="flex items-center justify-between border-t pt-4">
+                        <span className="text-sm font-medium">Account</span>
+                        <UserButton afterSignOutUrl="/" />
+                      </div>
+                    </SignedIn>
+
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Theme</span>
+                        <ModeToggleMobile />
+                      </div>
+                    </div>
                   </div>
-                  <ModeToggleMobile />
-                </div>
-                <DrawerFooter>
-                  <DrawerClose>
-                    <Button variant="outline">Close Menu</Button>
-                  </DrawerClose>
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
+                  <DrawerFooter>
+                    <DrawerClose>
+                      <Button variant="outline">Close</Button>
+                    </DrawerClose>
+                  </DrawerFooter>
+                </DrawerContent>
+              </Drawer>
+            </div>
           </div>
         </div>
       </MaxWidthWrapper>

@@ -293,6 +293,39 @@ export async function decryptBlob(
 // --- Entry-Specific Helpers ---
 
 /**
+ * Encrypt location data
+ *
+ * @param locationData - Location object with name, lat, lon
+ * @param key - AES-GCM encryption key (DEK)
+ * @returns Object with encrypted location JSON and IV
+ */
+export async function encryptLocation(
+  locationData: { name: string; lat: number; lon: number },
+  key: CryptoKey
+): Promise<{ encryptedLocation: string; iv: string }> {
+  const locationJson = JSON.stringify(locationData);
+  const { ciphertext, iv } = await encryptData(locationJson, key);
+  return { encryptedLocation: ciphertext, iv };
+}
+
+/**
+ * Decrypt location data
+ *
+ * @param encryptedLocation - Base64-encoded encrypted location JSON
+ * @param ivB64 - Base64-encoded IV
+ * @param key - AES-GCM decryption key (DEK)
+ * @returns Decrypted location object
+ */
+export async function decryptLocation(
+  encryptedLocation: string,
+  ivB64: string,
+  key: CryptoKey
+): Promise<{ name: string; lat: number; lon: number }> {
+  const locationJson = await decryptData(encryptedLocation, ivB64, key);
+  return JSON.parse(locationJson) as { name: string; lat: number; lon: number };
+}
+
+/**
  * Encrypt a mental health entry's sensitive fields (notes and tags).
  * Uses a single IV for both fields since they're part of the same logical entry.
  *
