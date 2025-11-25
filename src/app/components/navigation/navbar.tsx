@@ -44,7 +44,23 @@ const NAV_LINKS = [
   { title: "Community", href: "/community" },
 ];
 
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { useRouter } from "next/navigation";
+import { RotateCcw } from "lucide-react";
+
 const Navbar = () => {
+  const resetOnboarding = useMutation(api.users.resetOnboarding);
+  const router = useRouter();
+
+  const handleRestartOnboarding = async () => {
+    await resetOnboarding();
+    router.push("/");
+    // Force a reload to ensure state updates propagate immediately if needed,
+    // though reactive Convex queries should handle it.
+    // window.location.reload(); 
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <MaxWidthWrapper>
@@ -131,7 +147,15 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <div className="hidden md:flex md:items-center md:gap-2">
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton showName>
+                  <UserButton.MenuItems>
+                    <UserButton.Action
+                      label="Restart Onboarding"
+                      labelIcon={<RotateCcw className="h-4 w-4" />}
+                      onClick={handleRestartOnboarding}
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
                 <ModeToggle />
               </SignedIn>
               <SignedOut>
@@ -192,6 +216,13 @@ const Navbar = () => {
                           {link.title}
                         </Link>
                       ))}
+                      <button
+                        onClick={handleRestartOnboarding}
+                        className={cn(buttonVariants({ variant: "ghost" }), "justify-start text-muted-foreground")}
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Restart Onboarding
+                      </button>
                       <div className="flex items-center justify-between border-t pt-4">
                         <span className="text-sm font-medium">Account</span>
                         <UserButton afterSignOutUrl="/" />

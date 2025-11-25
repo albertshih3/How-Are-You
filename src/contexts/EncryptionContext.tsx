@@ -15,34 +15,49 @@ import {
   getPbkdf2Iterations,
 } from "@/lib/crypto/encryption";
 
-// SessionStorage key for persisting encryption key
+// Storage key for persisting encryption key
 const STORAGE_KEY = "howareyou_encryption_key";
 
 /**
- * Save CryptoKey to sessionStorage as base64-encoded raw key material.
- * This allows the key to persist across page navigation within the same session.
+ * Save CryptoKey to storage as base64-encoded raw key material.
+ * @param key - The CryptoKey to save
+ * @param remember - If true, save to localStorage (persistent). If false, save to sessionStorage (session only).
  */
-async function saveKeyToSession(key: CryptoKey): Promise<void> {
+async function saveKeyToStorage(key: CryptoKey, remember: boolean): Promise<void> {
   try {
     // Export key as raw ArrayBuffer
     const rawKey = await window.crypto.subtle.exportKey("raw", key);
     // Convert to base64 for storage
     const base64Key = arrayBufferToBase64(rawKey);
-    // Store in sessionStorage (cleared on tab close)
-    sessionStorage.setItem(STORAGE_KEY, base64Key);
+
+    if (remember) {
+      localStorage.setItem(STORAGE_KEY, base64Key);
+      // Clear session storage to avoid duplicates/confusion
+      sessionStorage.removeItem(STORAGE_KEY);
+    } else {
+      sessionStorage.setItem(STORAGE_KEY, base64Key);
+      // Clear local storage to ensure we respect the "don't remember" choice
+      localStorage.removeItem(STORAGE_KEY);
+    }
   } catch (error) {
-    console.error("Failed to save key to session:", error);
-    // Non-fatal: If storage fails, user just needs to unlock again on next navigation
+    console.error("Failed to save key to storage:", error);
   }
 }
 
 /**
- * Load CryptoKey from sessionStorage and import back to CryptoKey format.
- * Returns null if no key exists or if import fails.
+ * Load CryptoKey from storage (local or session) and import back to CryptoKey format.
+ * Checks localStorage first, then sessionStorage.
  */
-async function loadKeyFromSession(): Promise<CryptoKey | null> {
+async function loadKeyFromStorage(): Promise<CryptoKey | null> {
   try {
-    const base64Key = sessionStorage.getItem(STORAGE_KEY);
+    // Check localStorage first (persistent)
+    let base64Key = localStorage.getItem(STORAGE_KEY);
+
+    // Fallback to sessionStorage
+    if (!base64Key) {
+      base64Key = sessionStorage.getItem(STORAGE_KEY);
+    }
+
     if (!base64Key) {
       return null;
     }
@@ -61,22 +76,22 @@ async function loadKeyFromSession(): Promise<CryptoKey | null> {
 
     return key;
   } catch (error) {
-    console.error("Failed to load key from session:", error);
+    console.error("Failed to load key from storage:", error);
     // Clear corrupted data
-    clearKeyFromSession();
+    clearKeyFromStorage();
     return null;
   }
 }
 
 /**
- * Clear encryption key from sessionStorage.
- * Called on lock() and sign-out.
+ * Clear encryption key from both storages.
  */
-function clearKeyFromSession(): void {
+function clearKeyFromStorage(): void {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error("Failed to clear key from session:", error);
+    console.error("Failed to clear key from storage:", error);
   }
 }
 
@@ -85,8 +100,8 @@ interface EncryptionContextType {
   isUnlocked: boolean;
   isLoading: boolean;
   hasSetup: boolean;
-  setupEncryption: (passphrase: string) => Promise<void>;
-  unlockWithPassphrase: (passphrase: string) => Promise<void>;
+  setupEncryption: (passphrase: string, shouldRemember?: boolean) => Promise<void>;
+  unlockWithPassphrase: (passphrase: string, shouldRemember?: boolean) => Promise<void>;
   lock: () => void;
   error: string | null;
 }
@@ -110,13 +125,12 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
   const isUnlocked = decryptionKey !== null;
 
   /**
-   * Load encryption key from sessionStorage on mount.
-   * This allows key to persist across navigation within the same session.
+   * Load encryption key from storage on mount.
    */
   useEffect(() => {
     async function initializeKey() {
       try {
-        const storedKey = await loadKeyFromSession();
+        const storedKey = await loadKeyFromStorage();
         if (storedKey) {
           setDecryptionKey(storedKey);
         }
@@ -132,23 +146,21 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
 
   /**
    * Clear encryption key when user signs out.
-   * This ensures the key doesn't persist after logout.
    */
   useEffect(() => {
     if (userLoaded && !isSignedIn) {
       // User has signed out
       setDecryptionKey(null);
-      clearKeyFromSession();
+      clearKeyFromStorage();
       setError(null);
     }
   }, [isSignedIn, userLoaded]);
 
   /**
    * Setup encryption for the first time.
-   * Generates a new DEK, wraps it with KEK derived from passphrase, and stores it.
    */
   const setupEncryption = useCallback(
-    async (passphrase: string) => {
+    async (passphrase: string, shouldRemember: boolean = false) => {
       try {
         setError(null);
 
@@ -176,8 +188,8 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
         // Cache DEK in memory
         setDecryptionKey(dek);
 
-        // Persist DEK to sessionStorage for this session
-        await saveKeyToSession(dek);
+        // Persist DEK to storage
+        await saveKeyToStorage(dek, shouldRemember);
       } catch (err) {
         console.error("Failed to setup encryption:", err);
         setError("Failed to setup encryption. Please try again.");
@@ -189,10 +201,9 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
 
   /**
    * Unlock encryption with user's passphrase.
-   * Derives KEK from passphrase and unwraps the stored DEK.
    */
   const unlockWithPassphrase = useCallback(
-    async (passphrase: string) => {
+    async (passphrase: string, shouldRemember: boolean = false) => {
       try {
         setError(null);
 
@@ -222,8 +233,8 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
         // Cache DEK in memory
         setDecryptionKey(dek);
 
-        // Persist DEK to sessionStorage for this session
-        await saveKeyToSession(dek);
+        // Persist DEK to storage
+        await saveKeyToStorage(dek, shouldRemember);
       } catch (err) {
         console.error("Failed to unlock encryption:", err);
         setError("Incorrect passphrase. Please try again.");
@@ -234,12 +245,12 @@ export function EncryptionProvider({ children }: { children: React.ReactNode }) 
   );
 
   /**
-   * Lock encryption by clearing the decryption key from memory and sessionStorage.
+   * Lock encryption by clearing the decryption key from memory and storage.
    */
   const lock = useCallback(() => {
     setDecryptionKey(null);
     setError(null);
-    clearKeyFromSession();
+    clearKeyFromStorage();
   }, []);
 
   const value: EncryptionContextType = {

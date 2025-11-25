@@ -233,3 +233,84 @@ export const hasEncryptionSetup = query({
     return !!(user?.encryptedKey);
   },
 });
+
+export const completeOnboarding = mutation({
+  args: {
+    intent: v.string(),
+    experienceLevel: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to completeOnboarding");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      onboardingCompleted: true,
+      intent: args.intent,
+      experienceLevel: args.experienceLevel,
+    });
+  },
+});
+
+export const completeTour = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to completeTour");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      tourCompleted: true,
+    });
+  },
+});
+
+export const resetOnboarding = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to resetOnboarding");
+    }
+
+    const userId = getStableUserId(identity);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      onboardingCompleted: false,
+      tourCompleted: false,
+    });
+  },
+});

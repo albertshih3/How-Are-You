@@ -13,6 +13,7 @@ import {
   NotebookPen,
   ShieldCheck,
   Sparkles,
+  Sun,
 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 
@@ -30,96 +31,52 @@ type Testimonial = {
   quote: string;
   name: string;
   role: string;
-  pronouns: string;
-};
-
-type TrustSignal = {
-  title: string;
-  description: string;
-  icon: LucideIcon;
 };
 
 const FEATURES: Feature[] = [
   {
-    title: "Daily mood check-ins",
-    description:
-      "Understand emotional patterns with guided prompts tailored for student life.",
-    icon: HeartPulse,
+    title: "Daily Check-ins",
+    description: "Two-minute prompts to help you spot emotional patterns.",
+    icon: Sun,
   },
   {
-    title: "Reflective journaling",
-    description:
-      "Capture thoughts in a private space with templates designed by peers and counselors.",
+    title: "Private Journaling",
+    description: "A safe space for your thoughts, encrypted and secure.",
     icon: NotebookPen,
   },
   {
-    title: "Resource library",
-    description:
-      "Access evidence-based coping tools, campus services, and crisis hotlines in one hub.",
-    icon: Sparkles,
-  },
-  {
-    title: "Supportive community",
-    description:
-      "Connect with moderated peer groups and share wins that keep momentum going.",
-    icon: MessageCircleHeart,
-  },
-];
-
-const TRUST_SIGNALS: TrustSignal[] = [
-  {
-    title: "Privacy first",
-    description:
-      "Powered by Clerk authentication—your reflections stay yours.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Evidence-informed",
-    description:
-      "Developed with input from student counselors and backed by research insights.",
-    icon: Activity,
-  },
-  {
-    title: "Made by students",
-    description:
-      "Co-created with real student stories to ensure it resonates with daily campus life.",
+    title: "Campus Resources",
+    description: "One-tap access to counseling and crisis support.",
     icon: HeartPulse,
+  },
+  {
+    title: "Peer Support",
+    description: "Connect with students who understand the journey.",
+    icon: MessageCircleHeart,
   },
 ];
 
 const TESTIMONIALS: Testimonial[] = [
   {
     quote:
-      "Checking in takes less than two minutes, but it has completely changed how I notice stress before it spirals.",
+      "It’s simple, quick, and actually helps me notice when I’m getting stressed before it becomes overwhelming.",
     name: "Priya S.",
-    role: "Sophomore • Psychology",
-    pronouns: "she/her",
+    role: "Sophomore, Psychology",
   },
   {
     quote:
-      "It feels like it was built by people who get what juggling classes, clubs, and life actually looks like.",
+      "Finally, an app that feels like a deep breath instead of another task on my to-do list.",
     name: "Jordan L.",
-    role: "Senior • Computer Science",
-    pronouns: "they/them",
+    role: "Senior, CS",
   },
 ];
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-const heroContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.12,
-    },
-  },
-};
-
-const staggerGrid = {
+const staggerContainer = {
   hidden: {},
   visible: {
     transition: {
@@ -128,298 +85,182 @@ const staggerGrid = {
   },
 };
 
-const FeatureCard = ({ feature }: { feature: Feature }) => {
-  const Icon = feature.icon;
-  return (
-    <motion.div
-      variants={fadeIn}
-      className="flex h-full flex-col gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
-    >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Icon className="h-6 w-6" />
-      </div>
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{feature.title}</h3>
-        <p className="text-sm text-muted-foreground">{feature.description}</p>
-      </div>
-    </motion.div>
-  );
-};
-
-const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => (
-  <motion.figure
-    variants={fadeIn}
-    className="flex h-full flex-col justify-between rounded-2xl border border-border/60 bg-background/80 p-6 shadow-sm backdrop-blur"
-  >
-    <blockquote className="text-base leading-7 text-foreground/90">
-      “{testimonial.quote}”
-    </blockquote>
-    <figcaption className="mt-6">
-      <p className="font-semibold">{testimonial.name}</p>
-      <p className="text-sm text-muted-foreground">
-        {testimonial.role} • {testimonial.pronouns}
-      </p>
-    </figcaption>
-  </motion.figure>
-);
-
 export default function Home() {
   const { isSignedIn, isLoaded } = useAuth();
 
-  // Show loading state while checking auth
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
-  // Show Dashboard for signed-in users
   if (isSignedIn) {
     return <Dashboard />;
   }
 
-  // Show landing page for non-authenticated users
   return (
     <>
       <Toaster position="bottom-center" richColors />
-      <div className="flex flex-col gap-24 pb-20">
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-background to-background" />
-          <MaxWidthWrapper className="relative pt-20">
+      <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/10">
+
+        {/* Hero Section */}
+        <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32">
+          {/* Warm Gradient Background */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-orange-100/40 dark:bg-orange-900/10 blur-[100px] rounded-full opacity-70" />
+            <div className="absolute top-20 right-0 w-[800px] h-[600px] bg-rose-100/30 dark:bg-rose-900/10 blur-[120px] rounded-full opacity-60" />
+          </div>
+
+          <MaxWidthWrapper>
             <motion.div
               initial="hidden"
               animate="visible"
-              variants={heroContainer}
-              className="grid items-center gap-12 lg:grid-cols-[1fr,0.9fr]"
+              variants={staggerContainer}
+              className="flex flex-col items-center text-center"
             >
-              <motion.div variants={fadeIn} className="space-y-7">
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
-                  Supporting students every single day
-                </span>
-                <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-                  Get ahead of burnout with daily moments of care.
-                </h1>
-                <p className="max-w-xl text-lg text-muted-foreground">
-                  How Are You? empowers students to understand their emotional
-                  patterns, build resilient routines, and reach out before stress
-                  overwhelms. Reflect in private, find actionable resources, and
-                  celebrate progress with peers who get it.
-                </p>
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  <Link href="/sign-up" className={buttonVariants({ size: "lg" })}>
-                    Start your wellbeing journey
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                  <Link
-                    href="/about"
-                    className={buttonVariants({ variant: "ghost", size: "lg" })}
-                  >
-                    Learn how it works
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </div>
-                <dl className="grid grid-cols-2 gap-6 text-left text-sm text-muted-foreground sm:flex sm:items-center sm:gap-10">
-                  <div>
-                    <dt className="font-semibold text-foreground">5 min a day</dt>
-                    <dd>to check in and regroup.</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-foreground">100% private</dt>
-                    <dd>your reflections stay encrypted.</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-foreground">Student-led</dt>
-                    <dd>built with real campus voices.</dd>
-                  </div>
-                </dl>
+              <motion.div variants={fadeIn} className="mb-6 inline-flex items-center rounded-full border border-primary/10 bg-primary/5 px-3 py-1 text-sm text-primary/80 backdrop-blur-sm">
+                <Sparkles className="mr-2 h-3.5 w-3.5" />
+                <span>Reimagining student wellbeing</span>
               </motion.div>
-              <motion.div
-                variants={fadeIn}
-                className="relative mx-auto w-full max-w-lg"
-              >
-                <div className="absolute inset-0 -z-10 blur-3xl" aria-hidden>
-                  <div className="h-full w-full rounded-full bg-gradient-to-r from-primary/40 via-sky-300/30 to-indigo-400/30" />
-                </div>
-                <div className="overflow-hidden rounded-3xl border border-border/60 bg-background/90 shadow-xl ring-1 ring-primary/10">
-                  <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-6 py-4">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      Today’s check-in preview
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                      <span className="text-xs text-muted-foreground">Live</span>
-                    </div>
-                  </div>
-                  <div className="grid gap-6 px-6 py-8">
-                    <div className="rounded-2xl border border-border/60 bg-card/70 p-4 text-sm text-muted-foreground">
-                      “I felt energized after study group, but anxious about the
-                      upcoming exam. Tomorrow I’ll outline the last chapter.”
-                    </div>
-                    <div className="grid gap-3 text-sm">
-                      <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                        Mood trend this week
-                      </span>
-                      <Image
-                        src="/next.svg"
-                        alt="Sample chart placeholder"
-                        width={400}
-                        height={160}
-                        className="h-40 w-full rounded-xl border border-dashed border-border/60 bg-muted/30 object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between rounded-xl border border-border/60 bg-primary/5 px-4 py-3 text-sm">
-                      <div>
-                        <p className="font-medium text-foreground">Actionable next step</p>
-                        <p className="text-muted-foreground">Schedule a 15-minute walk with a friend this afternoon.</p>
-                      </div>
-                      <Button size="sm" variant="outline">
-                        Log it
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </MaxWidthWrapper>
-        </section>
 
-        <section>
-          <MaxWidthWrapper className="space-y-12">
-            <div className="space-y-4 text-center">
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Built to make support simple
-              </h2>
-              <p className="mx-auto max-w-2xl text-base text-muted-foreground">
-                We combine daily micro-reflections with proven techniques so you can notice patterns, regulate emotions, and get help when it matters most.
-              </p>
-            </div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }}
-              variants={staggerGrid}
-              className="grid gap-6 md:grid-cols-2"
-            >
-              {FEATURES.map((feature) => (
-                <FeatureCard key={feature.title} feature={feature} />
-              ))}
-            </motion.div>
-          </MaxWidthWrapper>
-        </section>
+              <motion.h1 variants={fadeIn} className="max-w-3xl text-5xl font-medium tracking-tight sm:text-7xl text-primary">
+                Find your balance, <br className="hidden sm:block" />
+                <span className="text-muted-foreground">one day at a time.</span>
+              </motion.h1>
 
-        <section className="bg-muted/40 py-16">
-          <MaxWidthWrapper className="grid gap-12 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
-              variants={fadeIn}
-              className="space-y-6"
-            >
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Feel supported, even on the busiest days
-              </h2>
-              <p className="text-base text-muted-foreground">
-                Quick prompts encourage mindful breaks between classes, while contextual insights help you recognize what fuels or drains you. When you need extra support, see campus resources and crisis contacts without leaving the app.
-              </p>
-              <ul className="grid gap-4 text-sm text-muted-foreground">
-                {TRUST_SIGNALS.map((signal) => {
-                  const Icon = signal.icon;
-                  return (
-                    <li key={signal.title} className="flex gap-3 rounded-xl border border-border/50 bg-background/80 p-4">
-                      <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{signal.title}</p>
-                        <p>{signal.description}</p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
-              variants={fadeIn}
-              className="relative overflow-hidden rounded-3xl border border-border/60 bg-background shadow-xl"
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-sky-200/30" aria-hidden />
-              <div className="relative grid gap-6 px-8 py-10">
-                <h3 className="text-xl font-semibold">Your wellbeing command center</h3>
-                <p className="text-sm text-muted-foreground">
-                  Visualize mood trends, log gratitude moments, and jump into curated coping strategies. Everything stays synced across devices.
-                </p>
-                <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-primary">
-                  This is a placeholder for a future dashboard screenshot. Replace with product imagery once design is finalized.
-                </div>
-                <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-muted-foreground">
-                  <span className="rounded-full bg-background px-3 py-1">Mood insights</span>
-                  <span className="rounded-full bg-background px-3 py-1">Guided journals</span>
-                  <span className="rounded-full bg-background px-3 py-1">Resource library</span>
-                  <span className="rounded-full bg-background px-3 py-1">Peer support</span>
-                </div>
-              </div>
-            </motion.div>
-          </MaxWidthWrapper>
-        </section>
+              <motion.p variants={fadeIn} className="mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed">
+                How Are You? is a simple, private space to track your mood, journal your thoughts, and access support when you need it most.
+              </motion.p>
 
-        <section>
-          <MaxWidthWrapper className="space-y-10">
-            <div className="space-y-4 text-center">
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Hear from students who rely on How Are You?
-              </h2>
-              <p className="mx-auto max-w-2xl text-base text-muted-foreground">
-                Feedback from our beta community keeps the experience grounded in real needs. Their stories guide every new release.
-              </p>
-            </div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }}
-              variants={staggerGrid}
-              className="grid gap-6 md:grid-cols-2"
-            >
-              {TESTIMONIALS.map((testimonial) => (
-                <TestimonialCard key={testimonial.name} testimonial={testimonial} />
-              ))}
-            </motion.div>
-          </MaxWidthWrapper>
-        </section>
-
-        <section className="py-16">
-          <MaxWidthWrapper>
-            <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 rounded-3xl border border-border/50 bg-card px-8 py-12 text-center shadow-lg">
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Ready to check in with yourself?
-              </h2>
-              <p className="max-w-2xl text-base text-muted-foreground">
-                Create your free account today and start building habits that keep you grounded, focused, and supported throughout the semester.
-              </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Link href="/sign-up" className={buttonVariants({ size: "lg" })}>
-                  Join the beta community
+              <motion.div variants={fadeIn} className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Link href="/sign-up" className={buttonVariants({ size: "lg", className: "rounded-full px-8 text-base" })}>
+                  Start checking in
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
                 <Link
                   href="/about"
-                  className={buttonVariants({ variant: "outline", size: "lg" })}
+                  className={buttonVariants({ variant: "ghost", size: "lg", className: "rounded-full px-8 text-base hover:bg-primary/5" })}
                 >
-                  Partner with us
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  How it works
+                </Link>
+              </motion.div>
+
+              {/* Dashboard Preview */}
+              <motion.div
+                variants={fadeIn}
+                className="mt-20 relative w-full max-w-5xl mx-auto"
+              >
+                <div className="relative rounded-3xl border border-border/40 bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border/10 bg-muted/30">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400/20" />
+                      <div className="w-3 h-3 rounded-full bg-amber-400/20" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-400/20" />
+                    </div>
+                  </div>
+                  <Image
+                    src="/dashboard-preview.png"
+                    alt="How Are You? Dashboard Preview"
+                    width={1200}
+                    height={800}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          </MaxWidthWrapper>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-24 bg-muted/30">
+          <MaxWidthWrapper>
+            <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+              {FEATURES.map((feature, i) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="group"
+                  >
+                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-background border border-border/50 shadow-sm transition-colors group-hover:border-primary/20 group-hover:bg-primary/5">
+                      <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-medium">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </MaxWidthWrapper>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-24">
+          <MaxWidthWrapper className="max-w-5xl">
+            <div className="grid gap-8 md:grid-cols-2">
+              {TESTIMONIALS.map((testimonial, i) => (
+                <motion.div
+                  key={testimonial.name}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="rounded-3xl bg-muted/30 p-8 sm:p-10"
+                >
+                  <div className="flex flex-col h-full justify-between gap-6">
+                    <p className="text-xl font-medium leading-relaxed text-foreground/80">
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </p>
+                    <div>
+                      <div className="font-medium">{testimonial.name}</div>
+                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </MaxWidthWrapper>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-24">
+          <MaxWidthWrapper>
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-primary px-6 py-20 text-center sm:px-16">
+              <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom_right,#ffffff05_0%,#ffffff00_100%)]" />
+              <div className="relative z-10 mx-auto max-w-2xl space-y-8">
+                <h2 className="text-3xl font-medium tracking-tight text-primary-foreground sm:text-4xl">
+                  Ready to prioritize your wellbeing?
+                </h2>
+                <p className="text-primary-foreground/70 text-lg">
+                  Join your peers in building healthier habits. It’s free, private, and takes just minutes a day.
+                </p>
+                <Link
+                  href="/sign-up"
+                  className={buttonVariants({
+                    size: "lg",
+                    variant: "secondary",
+                    className: "rounded-full px-8 h-12 text-base font-medium",
+                  })}
+                >
+                  Get Started Now
                 </Link>
               </div>
             </div>
           </MaxWidthWrapper>
         </section>
+
+        <footer className="py-12 text-center text-sm text-muted-foreground">
+          <p>© {new Date().getFullYear()} How Are You? Built with care for students.</p>
+        </footer>
       </div>
     </>
   );

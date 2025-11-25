@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useEncryption } from "@/contexts/EncryptionContext";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useMigrateEntries } from "@/lib/crypto/migration";
 
 const setupSchema = z
@@ -32,6 +33,7 @@ const setupSchema = z
       .string()
       .min(12, "Passphrase must be at least 12 characters for security"),
     confirmPassphrase: z.string(),
+    rememberMe: z.boolean().default(false),
   })
   .refine((data) => data.passphrase === data.confirmPassphrase, {
     message: "Passphrases do not match",
@@ -62,6 +64,7 @@ export function SetupEncryptionDialog({ open, onOpenChange }: SetupEncryptionDia
     defaultValues: {
       passphrase: "",
       confirmPassphrase: "",
+      rememberMe: false,
     },
   });
 
@@ -73,7 +76,7 @@ export function SetupEncryptionDialog({ open, onOpenChange }: SetupEncryptionDia
       setIsSubmitting(true);
 
       // Setup encryption (generates DEK, wraps it, stores it)
-      await setupEncryption(data.passphrase);
+      await setupEncryption(data.passphrase, data.rememberMe);
 
       // Migrate existing plaintext entries (decryptionKey is now available in context)
       if (decryptionKey) {
@@ -165,29 +168,27 @@ export function SetupEncryptionDialog({ open, onOpenChange }: SetupEncryptionDia
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all ${
-                              passphraseStrength === "weak"
-                                ? "w-1/3 bg-red-500"
-                                : passphraseStrength === "medium"
+                            className={`h-full transition-all ${passphraseStrength === "weak"
+                              ? "w-1/3 bg-red-500"
+                              : passphraseStrength === "medium"
                                 ? "w-2/3 bg-amber-500"
                                 : "w-full bg-green-500"
-                            }`}
+                              }`}
                           />
                         </div>
                         <span
-                          className={`text-xs font-medium ${
-                            passphraseStrength === "weak"
-                              ? "text-red-500"
-                              : passphraseStrength === "medium"
+                          className={`text-xs font-medium ${passphraseStrength === "weak"
+                            ? "text-red-500"
+                            : passphraseStrength === "medium"
                               ? "text-amber-500"
                               : "text-green-500"
-                          }`}
+                            }`}
                         >
                           {passphraseStrength === "weak"
                             ? "Weak"
                             : passphraseStrength === "medium"
-                            ? "Medium"
-                            : "Strong"}
+                              ? "Medium"
+                              : "Strong"}
                         </span>
                       </div>
                     </div>
@@ -231,6 +232,30 @@ export function SetupEncryptionDialog({ open, onOpenChange }: SetupEncryptionDia
               )}
             />
 
+            {/* Remember Me Checkbox */}
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Remember me on this device
+                    </FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      Stay unlocked even after you close the browser. Only use this on private devices.
+                    </p>
+                  </div>
+                </FormItem>
+              )}
+            />
+
             {/* Migration Progress */}
             {migrationProgress && (
               <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
@@ -247,9 +272,8 @@ export function SetupEncryptionDialog({ open, onOpenChange }: SetupEncryptionDia
                   <div
                     className="h-full bg-blue-500 transition-all"
                     style={{
-                      width: `${
-                        (migrationProgress.current / migrationProgress.total) * 100
-                      }%`,
+                      width: `${(migrationProgress.current / migrationProgress.total) * 100
+                        }%`,
                     }}
                   />
                 </div>

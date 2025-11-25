@@ -13,6 +13,11 @@ const users = defineTable({
   keySalt: v.optional(v.string()), // Base64 salt for PBKDF2
   keyIv: v.optional(v.string()), // Base64 IV used for key wrapping
   keyIterations: v.optional(v.number()), // PBKDF2 iteration count (e.g., 100000)
+  // Onboarding fields
+  onboardingCompleted: v.optional(v.boolean()),
+  tourCompleted: v.optional(v.boolean()),
+  intent: v.optional(v.string()),
+  experienceLevel: v.optional(v.string()),
 })
   .index("by_userId", ["userId"])
   .searchIndex("search_by_nickname", {

@@ -7,7 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { api } from "@convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@nextui-org/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
   Clock3,
@@ -35,11 +35,15 @@ import {
 } from "@/lib/animations";
 import { Doc } from "@convex/_generated/dataModel";
 
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+import { DashboardTour } from "@/components/tour/DashboardTour";
+
 export function Dashboard() {
   const { user, isLoaded } = useUser();
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const { hasSetup, isUnlocked, isLoading: encryptionLoading } = useEncryption();
 
+  const userProfile = useQuery(api.users.getProfile);
   const streakData = useQuery(api.streaks.getStreakData);
   const recentEntries = useQuery(api.entries.getRecentEntries, { limit: 5 });
   const articles = useQuery(api.articles.getRecommendedArticles, { limit: 3 });
@@ -140,8 +144,18 @@ export function Dashboard() {
   // Show unlock dialog if encryption is set up but not unlocked
   const shouldShowUnlock = hasSetup && !isUnlocked;
 
+  // Onboarding Logic
+  const showOnboarding = userProfile && !userProfile.onboardingCompleted;
+  const showTour = userProfile && userProfile.onboardingCompleted && !userProfile.tourCompleted;
+
   return (
     <>
+      {/* Onboarding & Tour */}
+      <AnimatePresence>
+        {showOnboarding && <OnboardingFlow onComplete={() => { }} />}
+        {showTour && <DashboardTour onComplete={() => { }} />}
+      </AnimatePresence>
+
       {/* Encryption Dialogs */}
       <SetupEncryptionDialog
         open={shouldShowSetup || showSetupDialog}
@@ -188,6 +202,7 @@ export function Dashboard() {
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <LogEntryDialog>
                     <Button
+                      id="tour-log-entry-btn"
                       size="lg"
                       className="group flex items-center gap-2 rounded-full bg-slate-900 px-8 py-6 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 dark:bg-white dark:text-slate-900 dark:shadow-white/10 dark:hover:bg-slate-100"
                     >
@@ -274,12 +289,15 @@ export function Dashboard() {
                   currentStreak={streakData?.currentStreak ?? 0}
                   longestStreak={streakData?.longestStreak ?? 0}
                 />
-                <InsightsCard entries={(recentEntries ?? []) as Doc<"entries">[]} />
+                <div id="tour-insights-card">
+                  <InsightsCard entries={(recentEntries ?? []) as Doc<"entries">[]} />
+                </div>
               </motion.div>
 
               <motion.div
                 variants={fadeUpVariants}
                 transition={{ delay: getStaggerDelay(1) }}
+                id="tour-recent-entries"
               >
                 <RecentEntriesList entries={(recentEntries ?? []) as Doc<"entries">[]} />
               </motion.div>
