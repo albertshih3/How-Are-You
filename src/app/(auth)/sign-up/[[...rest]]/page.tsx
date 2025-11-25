@@ -14,29 +14,28 @@ export function generateStaticParams() {
 
 const SignUpPage = () => {
   return (
-    <div className="container relative flex flex-col items-center justify-center pt-20 lg:px-0">
-      <div className="space-y-6 mx-auto flex w-full flex-col justify-center sm:w-[350px]">
-        <div className="flex flex-col items-center space-y-2 text-center">
-          <Image src={Logo} width={50} height={50} alt="How Are You Today?" />
-          <h1 className="text-2xl font-bold">Create an Account</h1>
-          <p className="text-sm text-muted-foreground">
-            Join the community and start recording how you feel today.
-          </p>
-          <Link
-            className={buttonVariants({ variant: "linkHover2" })}
-            href="/login"
-          >
-            Already have an account? Sign in
-          </Link>
-        </div>
-        <div className="pt-4" data-testid="clerk-sign-up">
-          <SignUp
-            appearance={authAppearance}
-            redirectUrl="/"
-          />
-        </div>
+    <>
+      <div className="flex flex-col items-center space-y-2 text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
+        <p className="text-sm text-muted-foreground">
+          Enter your email below to create your account
+        </p>
       </div>
-    </div>
+      <div className="grid gap-6" data-testid="clerk-sign-up">
+        <SignUp
+          appearance={authAppearance}
+          redirectUrl="/"
+        />
+      </div>
+      <p className="px-8 text-center text-sm text-muted-foreground">
+        <Link
+          href="/login"
+          className="hover:text-brand underline underline-offset-4"
+        >
+          Already have an account? Sign In
+        </Link>
+      </p>
+    </>
   );
 };
 

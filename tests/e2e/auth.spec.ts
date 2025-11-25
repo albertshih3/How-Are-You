@@ -12,17 +12,17 @@ test.describe("Public routes", () => {
 
     await expect(
       page.getByRole("heading", {
-        name: "Get ahead of burnout with daily moments of care.",
+        name: "Find your balance, one day at a time.",
       }),
     ).toBeVisible();
 
-    await expect(page.getByRole("link", { name: "Start your wellbeing journey" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Start checking in" })).toBeVisible();
   });
 
   test("login page renders Clerk sign-in", async ({ page }) => {
     await page.goto(`${baseUrl}/login`);
 
-    await expect(page.getByRole("heading", { name: "Welcome Back!" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 
     const signInWidget = page.getByTestId("clerk-sign-in");
     await expect(signInWidget).toBeVisible();
@@ -32,10 +32,10 @@ test.describe("Public routes", () => {
   test("sign-up page renders Clerk sign-up", async ({ page }) => {
     await page.goto(`${baseUrl}/sign-up`);
 
-    await expect(page.getByRole("heading", { name: "Create an Account" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create an account" })).toBeVisible();
 
     const signUpWidget = page.getByTestId("clerk-sign-up");
     await expect(signUpWidget).toBeVisible();
-    await expect(signUpWidget.getByRole("button", { name: /Sign up/i })).toBeVisible();
+    await expect(signUpWidget.getByRole("button", { name: /Continue/i })).toBeVisible();
   });
 });
