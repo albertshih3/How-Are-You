@@ -18,6 +18,9 @@ const users = defineTable({
   tourCompleted: v.optional(v.boolean()),
   intent: v.optional(v.string()),
   experienceLevel: v.optional(v.string()),
+  // Community fields
+  supportedPosts: v.optional(v.array(v.id("posts"))), // Posts user has supported
+  lastPostAt: v.optional(v.number()), // Timestamp of last post for cooldown
 })
   .index("by_userId", ["userId"])
   .searchIndex("search_by_nickname", {
@@ -72,8 +75,67 @@ const articles = defineTable({
   .index("by_status", ["status"])
   .index("by_author", ["authorId"]);
 
+const posts = defineTable({
+  userId: v.string(), // Author's userId
+  authorDisplayName: v.string(), // Nickname or "Anonymous"
+  isAnonymous: v.boolean(),
+  category: v.union(
+    v.literal("wins"),
+    v.literal("support"),
+    v.literal("coping"),
+    v.literal("resources"),
+    v.literal("questions"),
+    v.literal("reflections")
+  ),
+  title: v.string(),
+  content: v.string(), // Rich text HTML (sanitized, not encrypted)
+  tags: v.array(v.string()),
+  contentWarning: v.optional(v.string()),
+  status: v.union(v.literal("draft"), v.literal("published")),
+  supportCount: v.number(), // Denormalized count for performance
+  responseCount: v.number(), // Denormalized count for performance
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_userId", ["userId"])
+  .index("by_category", ["category"])
+  .index("by_status_createdAt", ["status", "createdAt"])
+  .index("by_category_status_createdAt", ["category", "status", "createdAt"]);
+
+const postResponses = defineTable({
+  postId: v.id("posts"),
+  userId: v.string(), // Responder's userId
+  authorDisplayName: v.string(),
+  isAnonymous: v.boolean(),
+  content: v.string(), // Rich text HTML (sanitized, not encrypted)
+  createdAt: v.number(),
+})
+  .index("by_postId", ["postId"])
+  .index("by_userId", ["userId"])
+  .index("by_postId_createdAt", ["postId", "createdAt"]);
+
+const postReports = defineTable({
+  postId: v.optional(v.id("posts")),
+  responseId: v.optional(v.id("postResponses")),
+  reportedBy: v.string(), // userId of reporter
+  reason: v.string(),
+  description: v.string(),
+  status: v.union(
+    v.literal("pending"),
+    v.literal("reviewed"),
+    v.literal("actioned")
+  ),
+  createdAt: v.number(),
+})
+  .index("by_status", ["status"])
+  .index("by_postId", ["postId"])
+  .index("by_responseId", ["responseId"]);
+
 export default defineSchema({
   users,
   entries,
   articles,
+  posts,
+  postResponses,
+  postReports,
 });

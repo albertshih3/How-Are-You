@@ -23,6 +23,7 @@ import { LogEntryDialog } from "./LogEntryDialog";
 import { RecentEntriesList } from "./RecentEntriesList";
 import { ArticlesSection } from "./ArticlesSection";
 import { InsightsCard } from "./InsightsCard";
+import { CommunityHighlights } from "./CommunityHighlights";
 import { useEncryption } from "@/contexts/EncryptionContext";
 import { SetupEncryptionDialog } from "@/components/encryption/SetupEncryptionDialog";
 import { UnlockEncryptionDialog } from "@/components/encryption/UnlockEncryptionDialog";
@@ -308,6 +309,15 @@ export function Dashboard() {
               >
                 <ArticlesSection articles={articles ?? []} moodLabel={lastCheckInMood} />
               </motion.div>
+            </motion.div>
+
+            {/* Community Highlights Section */}
+            <motion.div
+              variants={fadeUpVariants}
+              transition={{ delay: getStaggerDelay(3) }}
+              className="mt-8"
+            >
+              <CommunityHighlights />
             </motion.div>
           </div>
         </div>
