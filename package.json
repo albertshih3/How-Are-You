@@ -10,7 +10,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.32.0",
+    "@clerk/nextjs": "^6.39.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@google/generative-ai": "^0.24.1",
